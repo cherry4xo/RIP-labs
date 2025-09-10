@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block title %}Список услуг{% endblock %}
+
+{% block content %}
+<div class="content-section">
+    <h1 class="page-title">Виды анализа</h1>
+
+    <form action="{{ url_for('services_list') }}" method="get" class="search-form">
+        <input type="text" name="query" class="search-input" placeholder="Поиск по наименованию..." value="{{ search_query }}">
+        <button type="submit" class="btn">Найти</button>
+    </form>
+
+    <div class="services-grid">
+        {% for service in services %}
+        <a href="{{ url_for('service_detail', service_slug=service.slug) }}" class="service-card">
+            <img src="{{ url_for('static', path='/images/services/' + service.image_key) }}" alt="{{ service.name }}">
+            <div class="card-body">
+                <h3>{{ service.name }}</h3>
+                <p class="price">{{ service.price }}</p>
+            </div>
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

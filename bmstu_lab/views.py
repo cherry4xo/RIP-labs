@@ -1,4 +1,5 @@
 from datetime import date
+from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Request
 from fastapi.responses import HTMLResponse
@@ -9,167 +10,145 @@ from bmstu.settings import templates
 router = APIRouter()
 
 
-mock_orders = [
-        {
-            "id": 1,
-            "status": "В обработке",
-            "start_date": "02.09.2025",
-            "end_date": "07.09.2025",
-            "created_date": "01.09.2025"
-        },
-        {
-            "id": 2,
-            "status": "Выполнено",
-            "start_date": "03.09.2025",
-            "end_date": "09.09.2025",
-            "created_date": "02.09.2025"
-        }
-    ]
-
-
-ANALYSIS_DATA = {
-    "sql-injection": {
+SERVICES_DATA = [
+    {
         "slug": "sql-injection",
-        "title": "SQL Injection",
-        "description": "Поиск уязвимостей, связанных с базами данных",
-        "breadcrumbs": "Анализ/SQL Injection",
-        "params": [
-            {"label": "Критичность", "value": "Высокая"},
-            {"label": "Время сканирования", "value": "~15 минут"},
-            {"label": "Тип сканирования", "value": "Автоматизированный"},
-            {"label": "Глубина проверки", "value": "Базовая"},
-            {"label": "Соответствие", "value": "OWASP Top 10"},
-        ]
+        "name": "SQL Injection",
+        "short_description": "Поиск уязвимостей, связанных с базами данных.",
+        "full_description": "Полный автоматизированный анализ вашего приложения на предмет уязвимостей к SQL-инъекциям. Мы проверяем все входные точки данных, чтобы гарантировать безопасность вашей базы данных от несанкционированного доступа и манипуляций.",
+        "price": "15 000 руб.",
+        "image_key": "sql.png"
     },
-    "cross-site-scripting": {
+    {
         "slug": "cross-site-scripting",
-        "title": "Cross-site Scripting",
-        "description": "Анализ на инъекции вредоносного кода в страницы",
-        "breadcrumbs": "Анализ/Cross-site Scripting",
-        "params": [
-            {"label": "Критичность", "value": "Высокая"},
-            {"label": "Время сканирования", "value": "~10 минут"},
-            {"label": "Тип сканирования", "value": "Автоматизированный"},
-            {"label": "Глубина проверки", "value": "Стандартная"},
-            {"label": "Соответствие", "value": "OWASP Top 10"},
-        ]
+        "name": "Cross-site Scripting",
+        "short_description": "Анализ на инъекции вредоносного кода в страницы.",
+        "full_description": "Тестирование на XSS-уязвимости для предотвращения атак, которые могут скомпрометировать данные ваших пользователей. Анализ включает проверку как хранимых, так и отраженных XSS-атак.",
+        "price": "12 500 руб.",
+        "image_key": "xss.png"
     },
-    "csrf": {
+    {
         "slug": "csrf",
-        "title": "CSRF",
-        "description": "Проверка на подделку межсайтовых запросов",
-        "breadcrumbs": "Анализ/CSRF",
-        "params": [
-            {"label": "Критичность", "value": "Средняя"},
-            {"label": "Время сканирования", "value": "~5 минут"},
-            {"label": "Тип сканирования", "value": "Автоматизированный"},
-            {"label": "Глубина проверки", "value": "Базовая"},
-            {"label": "Соответствие", "value": "OWASP Top 10"},
-        ]
+        "name": "CSRF",
+        "short_description": "Проверка на подделку межсайтовых запросов.",
+        "full_description": "Аудит безопасности для защиты от атак типа 'Межсайтовая подделка запроса' (CSRF), которые заставляют пользователей выполнять нежелательные действия в приложении, в котором они аутентифицированы.",
+        "price": "10 000 руб.",
+        "image_key": "csrf.png"
     }
+]
+
+
+ORDER_DATA = {
+    "id": "ORD-001",
+    "status": "В обработке",
+    "services": [
+        {"slug": "sql-injection", "comment": "Проверить в первую очередь"},
+        {"slug": "cross-site-scripting", "comment": "Базовый уровень проверки"}
+    ],
+    "total_price": "27 500 руб." # Поле результата вычислений
 }
 
 
-@router.get("/", name="home", status_code=status.HTTP_200_OK)
-async def get_home_page(request: Request):
-    """Renders app home page
+def find_service(slug: str):
+    for service in SERVICES_DATA:
+        if service["slug"] == slug:
+            return service
+    return None
+
+
+@router.get("/", name="services_list", status_code=status.HTTP_200_OK)
+async def get_services_list(request: Request, query: Optional[str] = None):
+    """Get services list HTML page
 
     Args:
-        request (Request): FastAPI user's request
+        request (Request): user's FastAPI request
+        query (Optional[str], optional): Search query. Defaults to None.
 
     Returns:
         TemplateResponse: HTML page render
     """
-    return templates.TemplateResponse("index.html", {"request": request})
+    services = SERVICES_DATA
 
+    if query:
+        services = [
+            s for s in services
+            if query.lower() in s["name"].lower()
+        ]
 
-@router.get("/analysis", name="analysis_list", status_code=status.HTTP_200_OK)
-async def get_analysis_list(request: Request):
-    """Get all analysis methods list page
+    cart_item_count = len(ORDER_DATA["services"])
 
-    Args:
-        request (Request): FastAPI user's request
-
-    Returns:
-        TemplateResponse: HTML page render
-    """
     return templates.TemplateResponse(
-        "analysis_list.html",
-        {
+        "services_list.html", {
             "request": request,
-            "analyses": list(ANALYSIS_DATA.values())
+            "services": services,
+            "cart_item_count": cart_item_count,
+            "search_query": query or ""
         }
     )
 
 
-@router.get("/cart", name="cart", status_code=status.HTTP_200_OK)
-async def get_cart(request: Request):
-    """
-    Рендерит страницу корзины с товарами.
-    В реальном приложении данные о составе корзины будут браться из сессии пользователя или БД.
-    """
-    cart_slugs = {
-        "sql-injection": {"quantity": 1},
-        "cross-site-scripting": {"quantity": 2},
-    }
-
-    mock_cart_items = []
-    for slug, data in cart_slugs.items():
-        analysis_data = ANALYSIS_DATA.get(slug)
-        if analysis_data:
-            mock_cart_items.append({
-                "analysis": analysis_data,
-                "quantity": data["quantity"]
-            })
-    
-    if not mock_cart_items:
-        return templates.TemplateResponse("cart_empty.html", {"request": request})
-
-    return templates.TemplateResponse(
-        "cart.html",
-        {
-            "request": request,
-            "cart_items": mock_cart_items
-        }
-    )
-
-
-@router.get("/analysis/{analysis_slug}", name="analysis_detail", status_code=status.HTTP_200_OK)
-async def get_analysis_detail(request: Request, analysis_slug: str):
-    """Get page with single analysis method description in details
+@router.get("/service/{service_slug}", name="service_detail", status_code=status.HTTP_200_OK)
+async def get_servie_detail(request: Request, service_slug: str):
+    """Get service detail HTML page
 
     Args:
-        request (Request): FastAPI user's request
-        analysis_slug (str): Analysis method slug name
+        request (Request): user's FastAPI request
+        service_slug (str): service plug name
 
     Raises:
-        HTTPException: 404 status code if analysis method with slug name does not exists
+        HTTPException: 404 if service plug does not exist
 
     Returns:
         TemplateResponse: HTML page render
     """
-    analysis = ANALYSIS_DATA.get(analysis_slug)
-
-    if not analysis:
-        raise HTTPException(status_code=404, detail="Анализ не найден")
+    service = find_service(service_slug)
+    if not service:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Service not found")
+    
+    cart_item_count = len(ORDER_DATA["services"])
 
     return templates.TemplateResponse(
-        "analysis_detail.html",
-        {
+        "service_detail.html", {
             "request": request,
-            "analysis": analysis
+            "service": service,
+            "cart_item_count": cart_item_count
         }
     )
 
 
-@router.get("/cart", name="cart")
-async def get_cart(request: Request):
-    """Get empty card page
+@router.get("/order/{order_id}", name="order_detail", status_code=status.HTTP_200_OK)
+async def get_order_detail(request: Request, order_id: str):
+    """Get order detail HTML page
 
     Args:
-        request (Request): FastAPI user's request
+        request (Request): user's FastAPI request
+        order_id (str): order to render id
+
+    Raises:
+        HTTPException: 404 if order does not exist
 
     Returns:
         TemplateResponse: HTML page render
     """
-    return templates.TemplateResponse("cart_empty.html", {"request": request})
+    if order_id != ORDER_DATA["id"]:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Order not found")
+    
+    order_services = []
+    for item in ORDER_DATA["services"]:
+        service_data = find_service(item["slug"])
+        if service_data:
+            order_services.append({
+                "details": service_data,
+                "comment": item["comment"],
+            })
+
+    cart_item_count = len(ORDER_DATA["services"])
+
+    return templates.TemplateResponse(
+        "order_detail.html", {
+            "request": request,
+            "order": ORDER_DATA,
+            "order_services": order_services,
+            "cart_item_count": cart_item_count
+        }
+    )

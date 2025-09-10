@@ -3,25 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Positive Technologies{% endblock %}</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>{% block title %}PT Services{% endblock %}</title>
     <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
 </head>
 <body>
     <div class="background-overlay"></div>
     <div class="main-container">
         <header>
-            <a href="{{ url_for('home') }}">
-                <img src="{{ url_for('static', path='/logo.svg') }}" alt="Positive Technologies Logo" class="header-logo">
+            <a href="{{ url_for('services_list') }}" class="home-link">
+                <img src="{{ url_for('static', path='/logo.svg') }}" alt="Home" class="header-logo">
+                <span>Домой</span>
             </a>
-            <nav>
-                <a href="{{ url_for('analysis_list') }}">Виды анализа</a>
-                <a href="{{ url_for('cart') }}">Корзина</a>
-            </nav>
+            <a href="{{ url_for('order_detail', order_id='ORD-001') }}" class="cart-card">
+                <span>Текущая заявка</span>
+                <div class="cart-count">{{ cart_item_count }}</div>
+            </a>
         </header>
-
         <main>
             {% block content %}
             {% endblock %}
