@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Корзина{% endblock %}
+
+{% block content %}
+<div class="content-section">
+    <div class="cart-header">
+        <h1 class="page-title">Корзина</h1>
+        <a href="#" class="btn btn-outline">Выбрать все товары</a>
+    </div>
+
+    <div class="cart-item-list">
+        {% for item in cart_items %}
+        <div class="cart-item">
+            <div class="item-info">
+                <span class="card-tag">ANALYSIS</span>
+                <h3>{{ item.analysis.title }}</h3>
+                <p>{{ item.analysis.description }}</p>
+                <a href="{{ url_for('analysis_detail', analysis_slug=item.analysis.slug) }}" class="card-link">Подробнее <span class="arrow">»</span></a>
+            </div>
+            <div class="item-actions">
+                <div class="quantity-control">
+                    <button>-</button>
+                    <span>{{ item.quantity }}</span>
+                    <button>+</button>
+                </div>
+                <a href="#" class="btn btn-secondary">Купить сейчас</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

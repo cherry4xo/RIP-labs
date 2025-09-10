@@ -1,0 +1,343 @@
+/* static/css/style.css (v2 - Исправленная версия) */
+
+/* === VARIABLES & GLOBAL STYLES === */
+:root {
+    --primary-red: #E4002B;
+    --text-primary: #FFFFFF;
+    --text-secondary: #a0a0a0;
+    --background-dark: #0A0A0A;
+    --border-color: #333333;
+    --card-background: rgba(15, 15, 15, 0.7);
+    --hover-background: rgba(25, 25, 25, 0.8);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Manrope', sans-serif;
+    background-color: var(--background-dark);
+    color: var(--text-primary);
+    background-image: url('/static/images/background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+}
+
+.background-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.95) 100%);
+    z-index: -1;
+}
+
+.main-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+main {
+    padding: 2rem 0 4rem; /* Добавим отступ снизу */
+}
+
+
+/* === HEADER === */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+}
+
+.header-logo {
+    height: 28px;
+    width: auto;
+}
+
+nav a {
+    color: var(--text-primary);
+    text-decoration: none;
+    margin-left: 2.5rem;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: color 0.3s ease;
+}
+
+nav a:hover {
+    color: var(--primary-red);
+}
+
+
+/* === HERO SECTION (Главная страница) === */
+.hero-section {
+    max-width: 600px;
+    padding: 5rem 0;
+}
+.hero-logo {
+    width: 450px;
+    height: auto;
+}
+.hero-section h2 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    margin-top: 1rem;
+    line-height: 1.1;
+}
+.hero-section p {
+    color: var(--text-secondary);
+    margin-top: 1rem;
+    font-size: 1.1rem;
+}
+.hero-buttons {
+    margin-top: 2.5rem;
+    display: flex;
+    gap: 1rem;
+}
+
+
+/* === BUTTONS & SHARED COMPONENTS === */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center; /* Для кнопок с иконками */
+    padding: 0.75rem 1.5rem;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+    cursor: pointer; /* Важно для кнопок */
+}
+.arrow {
+    margin-left: 0.75rem;
+    font-weight: bold;
+    font-size: 1.2rem;
+}
+.btn-primary {
+    background-color: var(--primary-red);
+    color: var(--text-primary);
+}
+.btn-primary:hover {
+    background-color: transparent;
+    border-color: var(--primary-red);
+    color: var(--primary-red);
+}
+.btn-secondary {
+    background-color: #333;
+    color: var(--text-primary);
+}
+.btn-secondary:hover {
+    background-color: var(--primary-red);
+}
+.btn-outline {
+    border: 2px solid var(--border-color);
+    color: var(--text-primary);
+}
+.btn-outline:hover {
+    border-color: var(--primary-red);
+    color: var(--primary-red);
+}
+
+.page-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
+}
+.page-title-large {
+    font-size: 4rem;
+    font-weight: 800;
+}
+.search-input {
+    background-color: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.75rem 0;
+    font-size: 1rem;
+    width: 100%;
+    margin-bottom: 3rem;
+    transition: border-color 0.3s ease;
+}
+.search-input:focus {
+    outline: none;
+    border-color: var(--primary-red);
+}
+.search-input::placeholder {
+    color: var(--text-secondary);
+}
+.card-tag {
+    color: var(--text-secondary);
+    font-weight: bold;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+.card-link {
+    color: var(--text-primary);
+    text-decoration: none;
+    font-weight: bold;
+}
+.card-link:hover {
+    color: var(--primary-red);
+}
+
+/* === ANALYSIS LIST & CART ITEM SHARED STYLES === */
+.analysis-list, .cart-item-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.analysis-list-item, .cart-item {
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    padding: 2rem 2.5rem;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    transition: all 0.3s ease;
+    border-radius: 10px;
+}
+
+.analysis-list-item:hover {
+    border-color: var(--primary-red);
+    background-color: var(--hover-background);
+}
+
+.item-info {
+    flex-grow: 1; /* Позволяет этому блоку занимать максимум места */
+}
+
+.item-info .card-tag {
+    margin-bottom: 0.5rem;
+    display: block;
+}
+.item-info h3 {
+    font-size: 1.75rem;
+    margin-bottom: 0.25rem;
+    font-weight: 700;
+}
+.item-info p {
+    color: var(--text-secondary);
+    max-width: 500px; /* Ограничим ширину текста */
+}
+
+.item-actions {
+    display: flex;
+    align-items: center;
+    gap: 2.5rem;
+    flex-shrink: 0; /* Запрещает блоку сжиматься */
+    padding-left: 2rem; /* Добавим отступ от текста */
+}
+
+
+/* === ANALYSIS DETAIL PAGE === */
+.breadcrumbs {
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+.page-title-large {
+    margin-bottom: 2.5rem;
+}
+.detail-container {
+    display: flex;
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+    padding: 2.5rem;
+    gap: 3rem;
+}
+.detail-left {
+    flex-basis: 50%;
+}
+.detail-left h2 {
+    font-size: 2.5rem;
+    margin: 1rem 0;
+}
+.detail-left p {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    margin-bottom: 2.5rem;
+}
+.detail-right {
+    flex-basis: 50%;
+    border-left: 1px solid var(--border-color);
+    padding-left: 3rem;
+}
+.detail-right h4 {
+    color: var(--text-secondary);
+    font-weight: bold;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1.5rem;
+}
+.params-list {
+    list-style: none;
+}
+.params-list li {
+    display: flex;
+    justify-content: space-between;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color);
+    font-size: 1.1rem;
+}
+.params-list li:last-child {
+    border-bottom: none;
+}
+.params-list li span:first-child {
+    color: var(--text-secondary);
+}
+.params-list li span:last-child {
+    font-weight: bold;
+}
+
+
+/* === CART PAGE SPECIFIC STYLES === */
+.cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 3rem;
+}
+
+.cart-item .item-info p {
+    margin-bottom: 1rem;
+}
+
+.quantity-control {
+    display: flex;
+    align-items: center;
+    gap: 1.25rem; /* Увеличим расстояние */
+}
+.quantity-control button {
+    background: none;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 1; /* Для лучшего выравнивания текста внутри */
+    cursor: pointer;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+.quantity-control button:hover {
+    border-color: var(--primary-red);
+    color: var(--primary-red);
+}
+.quantity-control span {
+    font-size: 1.2rem;
+    font-weight: bold;
+    min-width: 20px;
+    text-align: center;
+}
