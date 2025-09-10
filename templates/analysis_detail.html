@@ -1,0 +1,28 @@
+<!-- templates/analysis_detail.html -->
+{% extends 'base.html' %}
+
+{% block title %}{{ analysis.title }}{% endblock %}
+
+{% block content %}
+<div class="content-section">
+    <p class="breadcrumbs">{{ analysis.breadcrumbs }}</p>
+    <h1 class="page-title-large">{{ analysis.title }}</h1>
+
+    <div class="detail-container">
+        <div class="detail-left">
+            <span class="card-tag">ANALYSIS</span>
+            <h2>{{ analysis.title }}</h2>
+            <p>{{ analysis.description }}</p>
+            <a href="#" class="btn btn-secondary">В корзину <span class="arrow">»</span></a>
+        </div>
+        <div class="detail-right">
+            <h4>Параметры анализа</h4>
+            <ul class="params-list">
+                {% for param in analysis.params %}
+                <li><span>{{ param.label }}:</span> <span>{{ param.value }}</span></li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}

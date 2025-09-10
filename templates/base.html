@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Positive Technologies{% endblock %}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+</head>
+<body>
+    <div class="background-overlay"></div>
+    <div class="main-container">
+        <header>
+            <a href="{{ url_for('home') }}">
+                <img src="{{ url_for('static', path='/logo.svg') }}" alt="Positive Technologies Logo" class="header-logo">
+            </a>
+            <nav>
+                <a href="{{ url_for('analysis_list') }}">Виды анализа</a>
+                <a href="{{ url_for('cart') }}">Корзина</a>
+            </nav>
+        </header>
+
+        <main>
+            {% block content %}
+            {% endblock %}
+        </main>
+    </div>
+</body>
+</html>
