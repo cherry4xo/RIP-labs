@@ -1,4 +1,4 @@
-/* static/css/style.css (v2 - Исправленная версия) */
+/* static/css/style.css (Возвращение к оригинальному стилю) */
 
 /* === VARIABLES & GLOBAL STYLES === */
 :root {
@@ -10,13 +10,11 @@
     --card-background: rgba(15, 15, 15, 0.7);
     --hover-background: rgba(25, 25, 25, 0.8);
 }
-
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
-
 body {
     font-family: 'Manrope', sans-serif;
     background-color: var(--background-dark);
@@ -27,317 +25,129 @@ body {
     background-repeat: no-repeat;
     background-attachment: fixed;
 }
-
 .background-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: radial-gradient(circle, rgba(0,0,0,0.3) 0%, rgba(0,0,0,0.95) 100%);
     z-index: -1;
 }
-
-.main-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 2rem;
-}
-
-main {
-    padding: 2rem 0 4rem; /* Добавим отступ снизу */
-}
+.main-container { max-width: 1200px; margin: 0 auto; padding: 0 2rem; }
+a { text-decoration: none; }
+main { padding: 2.5rem 0; }
+.page-title { font-size: 3rem; font-weight: 800; margin-bottom: 2.5rem; }
+.price { font-size: 1.2rem; font-weight: 700; color: var(--text-primary); }
 
 
 /* === HEADER === */
 header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 0;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 2rem 0;
 }
-
-.header-logo {
-    height: 28px;
-    width: auto;
+.home-link {
+    display: flex; align-items: center; gap: 1rem;
+    color: var(--text-primary); font-weight: 600; font-size: 1.1rem;
+    opacity: 0.8; transition: opacity 0.3s;
 }
-
-nav a {
-    color: var(--text-primary);
-    text-decoration: none;
-    margin-left: 2.5rem;
-    font-weight: 500;
-    font-size: 1rem;
-    transition: color 0.3s ease;
+.home-link:hover { opacity: 1; }
+.header-logo { height: 28px; }
+.cart-card {
+    display: flex; align-items: center; gap: 1rem;
+    background-color: transparent; border: 1px solid var(--border-color);
+    padding: 0.5rem 1rem; color: var(--text-secondary);
+    transition: all 0.3s;
 }
-
-nav a:hover {
-    color: var(--primary-red);
-}
-
-
-/* === HERO SECTION (Главная страница) === */
-.hero-section {
-    max-width: 600px;
-    padding: 5rem 0;
-}
-.hero-logo {
-    width: 450px;
-    height: auto;
-}
-.hero-section h2 {
-    font-size: 3.5rem;
-    font-weight: 800;
-    margin-top: 1rem;
-    line-height: 1.1;
-}
-.hero-section p {
-    color: var(--text-secondary);
-    margin-top: 1rem;
-    font-size: 1.1rem;
-}
-.hero-buttons {
-    margin-top: 2.5rem;
-    display: flex;
-    gap: 1rem;
+.cart-card:hover { border-color: var(--primary-red); color: var(--text-primary); }
+.cart-count {
+    background-color: var(--primary-red); color: var(--text-primary);
+    width: 24px; height: 24px;
+    display: grid; place-items: center;
+    font-weight: bold; font-size: 0.9rem;
 }
 
 
-/* === BUTTONS & SHARED COMPONENTS === */
-.btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center; /* Для кнопок с иконками */
-    padding: 0.75rem 1.5rem;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 1rem;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-    cursor: pointer; /* Важно для кнопок */
-}
-.arrow {
-    margin-left: 0.75rem;
-    font-weight: bold;
-    font-size: 1.2rem;
-}
-.btn-primary {
-    background-color: var(--primary-red);
-    color: var(--text-primary);
-}
-.btn-primary:hover {
-    background-color: transparent;
-    border-color: var(--primary-red);
-    color: var(--primary-red);
-}
-.btn-secondary {
-    background-color: #333;
-    color: var(--text-primary);
-}
-.btn-secondary:hover {
-    background-color: var(--primary-red);
-}
-.btn-outline {
-    border: 2px solid var(--border-color);
-    color: var(--text-primary);
-}
-.btn-outline:hover {
-    border-color: var(--primary-red);
-    color: var(--primary-red);
-}
-
-.page-title {
-    font-size: 3rem;
-    font-weight: 800;
-    margin-bottom: 2rem;
-}
-.page-title-large {
-    font-size: 4rem;
-    font-weight: 800;
-}
+/* === SEARCH FORM === */
+.search-form { display: flex; gap: 1rem; margin-bottom: 3rem; }
 .search-input {
-    background-color: transparent;
-    border: none;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-primary);
-    padding: 0.75rem 0;
-    font-size: 1rem;
-    width: 100%;
-    margin-bottom: 3rem;
-    transition: border-color 0.3s ease;
+    flex-grow: 1; background-color: transparent;
+    border: none; border-bottom: 1px solid var(--border-color);
+    color: var(--text-primary); padding: 0.75rem 0;
+    font-size: 1rem; transition: border-color 0.3s ease;
 }
-.search-input:focus {
-    outline: none;
-    border-color: var(--primary-red);
+.search-input:focus { outline: none; border-color: var(--primary-red); }
+.search-input::placeholder { color: var(--text-secondary); }
+.btn {
+    display: inline-flex; align-items: center; justify-content: center;
+    padding: 0.75rem 1.5rem; text-decoration: none; font-weight: 700;
+    font-size: 1rem; transition: all 0.3s ease; border: 2px solid transparent;
+    background-color: var(--primary-red); color: var(--text-primary);
+    cursor: pointer;
 }
-.search-input::placeholder {
-    color: var(--text-secondary);
-}
-.card-tag {
-    color: var(--text-secondary);
-    font-weight: bold;
-    font-size: 0.8rem;
-    letter-spacing: 0.5px;
-    text-transform: uppercase;
-}
-.card-link {
-    color: var(--text-primary);
-    text-decoration: none;
-    font-weight: bold;
-}
-.card-link:hover {
-    color: var(--primary-red);
-}
+.btn:hover { background-color: transparent; border-color: var(--primary-red); color: var(--primary-red); }
 
-/* === ANALYSIS LIST & CART ITEM SHARED STYLES === */
-.analysis-list, .cart-item-list {
-    display: flex;
-    flex-direction: column;
+
+/* === SERVICES GRID (Page 1) === */
+.services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
     gap: 1.5rem;
 }
-
-.analysis-list-item, .cart-item {
-    background-color: var(--card-background);
-    border: 1px solid var(--border-color);
-    padding: 2rem 2.5rem;
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    transition: all 0.3s ease;
-    border-radius: 10px;
+.service-card {
+    display: block; background-color: var(--card-background);
+    border: 1px solid var(--border-color); overflow: hidden;
+    transition: transform 0.3s, border-color 0.3s;
 }
+.service-card:hover { transform: translateY(-5px); border-color: var(--primary-red); }
+.service-card img { width: 100%; height: 200px; object-fit: cover; display: block; }
+.service-card .card-body { padding: 1.5rem; }
+.service-card h3 { font-size: 1.5rem; margin-bottom: 0.5rem; color: var(--text-primary); }
 
-.analysis-list-item:hover {
-    border-color: var(--primary-red);
-    background-color: var(--hover-background);
-}
 
-.item-info {
-    flex-grow: 1; /* Позволяет этому блоку занимать максимум места */
-}
-
-.item-info .card-tag {
-    margin-bottom: 0.5rem;
-    display: block;
-}
-.item-info h3 {
-    font-size: 1.75rem;
-    margin-bottom: 0.25rem;
+/* === SERVICE DETAIL (Page 2) === */
+.detail-container { display: flex; gap: 3rem; }
+.detail-image { flex-basis: 50%; flex-shrink: 0; }
+.detail-image img { width: 100%; border: 1px solid var(--border-color); }
+.detail-info { flex-basis: 50%; }
+.detail-info h2 {
+    font-size: 1.5rem; margin-bottom: 1rem;
+    padding-bottom: 1rem; border-bottom: 1px solid var(--border-color);
     font-weight: 700;
 }
-.item-info p {
-    color: var(--text-secondary);
-    max-width: 500px; /* Ограничим ширину текста */
-}
-
-.item-actions {
-    display: flex;
-    align-items: center;
-    gap: 2.5rem;
-    flex-shrink: 0; /* Запрещает блоку сжиматься */
-    padding-left: 2rem; /* Добавим отступ от текста */
-}
-
-
-/* === ANALYSIS DETAIL PAGE === */
-.breadcrumbs {
-    color: var(--text-secondary);
-    margin-bottom: 0.5rem;
-}
-.page-title-large {
-    margin-bottom: 2.5rem;
-}
-.detail-container {
-    display: flex;
-    background-color: var(--card-background);
+.detail-info p { color: var(--text-secondary); line-height: 1.7; font-size: 1.1rem; }
+.detail-price {
+    margin-top: 2rem; display: flex; justify-content: space-between; align-items: center;
+    background: var(--card-background); padding: 1.25rem;
     border: 1px solid var(--border-color);
-    padding: 2.5rem;
-    gap: 3rem;
 }
-.detail-left {
-    flex-basis: 50%;
-}
-.detail-left h2 {
-    font-size: 2.5rem;
-    margin: 1rem 0;
-}
-.detail-left p {
-    color: var(--text-secondary);
-    font-size: 1.1rem;
-    margin-bottom: 2.5rem;
-}
-.detail-right {
-    flex-basis: 50%;
-    border-left: 1px solid var(--border-color);
-    padding-left: 3rem;
-}
-.detail-right h4 {
-    color: var(--text-secondary);
-    font-weight: bold;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 1.5rem;
-}
-.params-list {
-    list-style: none;
-}
-.params-list li {
-    display: flex;
-    justify-content: space-between;
-    padding: 1rem 0;
-    border-bottom: 1px solid var(--border-color);
-    font-size: 1.1rem;
-}
-.params-list li:last-child {
-    border-bottom: none;
-}
-.params-list li span:first-child {
-    color: var(--text-secondary);
-}
-.params-list li span:last-child {
-    font-weight: bold;
-}
+.detail-price span:first-child { color: var(--text-secondary); font-size: 1.1rem; }
 
 
-/* === CART PAGE SPECIFIC STYLES === */
-.cart-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 3rem;
+/* === ORDER DETAIL (Page 3) === */
+.order-summary {
+    background: var(--card-background); padding: 2rem;
+    border: 1px solid var(--border-color); margin-bottom: 3rem;
 }
-
-.cart-item .item-info p {
-    margin-bottom: 1rem;
+.order-summary h3 { font-size: 1.5rem; margin-bottom: 1.5rem; }
+.order-summary p { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 0.5rem; }
+.order-summary .total {
+    color: var(--text-primary); font-weight: bold; font-size: 1.25rem;
+    margin-top: 1.5rem; padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
 }
-
-.quantity-control {
-    display: flex;
-    align-items: center;
-    gap: 1.25rem; /* Увеличим расстояние */
-}
-.quantity-control button {
-    background: none;
+.services-in-order-title { font-size: 2rem; font-weight: 700; margin-bottom: 1.5rem; }
+.order-items-list { display: flex; flex-direction: column; gap: 1rem; }
+.order-item-card {
+    display: flex; align-items: center; gap: 1.5rem;
+    background-color: var(--card-background); padding: 1rem 1.5rem;
     border: 1px solid var(--border-color);
-    color: var(--text-primary);
-    font-size: 1.5rem;
-    font-weight: 500;
-    line-height: 1; /* Для лучшего выравнивания текста внутри */
-    cursor: pointer;
-    width: 38px;
-    height: 38px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.3s ease;
 }
-.quantity-control button:hover {
-    border-color: var(--primary-red);
-    color: var(--primary-red);
+.order-item-card img {
+    width: 100px; height: 75px; object-fit: cover;
+    flex-shrink: 0;
 }
-.quantity-control span {
-    font-size: 1.2rem;
-    font-weight: bold;
-    min-width: 20px;
-    text-align: center;
+.order-item-name { flex-grow: 1; font-weight: 600; font-size: 1.2rem; }
+.order-item-mm-field {
+    background-color: #000; padding: 0.5rem 1rem;
+    border: 1px solid var(--border-color);
+    text-align: right;
 }
+.mm-label { font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;}
+.mm-value { font-weight: 500; }
