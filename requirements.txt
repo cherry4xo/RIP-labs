@@ -1,4 +1,7 @@
 fastapi
 jinja2
-load_dotenv
 uvicorn
+load_dotenv
+alembic
+sqlalchemy[asyncio]
+asyncpg
