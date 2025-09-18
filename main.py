@@ -1,8 +1,6 @@
 from fastapi import FastAPI
 
-from bmstu.init import init_app
+from app.core.init import create_app
 
 
-app = FastAPI()
-
-init_app(app)
+app = create_app()

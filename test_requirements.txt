@@ -4,8 +4,6 @@ uvicorn
 load_dotenv
 alembic
 sqlalchemy[asyncio]
-asyncpg
 pytest
 pytest-asyncio
 aiosqlite
-psycopg2-binary

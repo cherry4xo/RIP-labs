@@ -1,28 +1,35 @@
-<!doctype html>
-<html lang="ru">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}PT Services{% endblock %}</title>
-    <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
-</head>
-<body>
-    <div class="background-overlay"></div>
-    <div class="main-container">
-        <header>
-            <a href="{{ url_for('services_list') }}" class="home-link">
-                <img src="{{ url_for('static', path='/logo.svg') }}" alt="Home" class="header-logo">
-                <span>Домой</span>
-            </a>
-            <a href="{{ url_for('order_detail', order_id='ORD-001') }}" class="cart-card">
-                <span>Текущая заявка</span>
-                <div class="cart-count">{{ cart_item_count }}</div>
-            </a>
-        </header>
-        <main>
-            {% block content %}
-            {% endblock %}
-        </main>
-    </div>
-</body>
-</html>
+    <!doctype html>
+    <html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>{% block title %}PT Services{% endblock %}</title>
+        <link rel="stylesheet" href="{{ url_for('static', path='/css/style.css') }}">
+    </head>
+    <body>
+        <div class="background-overlay"></div>
+        <div class="main-container">
+            <header>
+                <a href="{{ url_for('services_list') }}" class="home-link">
+                    <img src="{{ url_for('static', path='/logo.svg') }}" alt="Home" class="header-logo">
+                    <span>Домой</span>
+                </a>
+                {% if cart_id %}
+                    <a href="{{ url_for('order_detail', order_id=cart_id) }}" class="cart-card">
+                        <span>Текущая заявка</span>
+                        <div class="cart-count">{{ cart_item_count }}</div>
+                    </a>
+                {% else %}
+                    <div class="cart-card-disabled">
+                        <span>Текущая заявка</span>
+                        <div class="cart-count">0</div>
+                    </div>
+                {% endif %}
+            </header>
+            <main>
+                {% block content %}
+                {% endblock %}
+            </main>
+        </div>
+    </body>
+    </html>

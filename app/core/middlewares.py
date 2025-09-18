@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from bmstu import settings
+from app.core import settings
 
 def init_middlewares(app: FastAPI):
     app.add_middleware(
