@@ -7,7 +7,7 @@ import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.database import get_db_session
-from app.models import Service, ServiceStatus, ServiceAssessmentType
+from app.models import Service, ServiceStatus, ServiceAssessmentType, User
 
 
 # --- Данные, которые мы хотим добавить ---
@@ -47,6 +47,11 @@ SERVICES_DATA = [
 ]
 
 
+def simple_hash(password: str) -> str:
+    """Это не безопасно! Только для демонстрации."""
+    return f"hashed_{password}_salt"
+
+
 async def seed_services():
     print("Starting to seed services...")
     # Используем генератор сессий из вашего приложения
@@ -69,10 +74,36 @@ async def seed_services():
         print("Services seeding finished successfully.")
 
 
+async def seed_users():
+    print("Starting to seed users...")
+    async for session in get_db_session():
+        # Проверяем, существует ли пользователь с логином 'user'
+        stmt = select(User).where(User.login == 'user')
+        existing_user = await session.scalar(stmt)
+
+        if existing_user:
+            print("Default user 'user' already exists, skipping.")
+        else:
+            # Создаем нового пользователя
+            # Важно: ID будет присвоен автоматически базой данных (serial),
+            # и он будет равен 1, если это первая запись в таблице.
+            new_user = User(
+                login='user',
+                password_hash=simple_hash('password'),
+                is_moderator=False
+            )
+            session.add(new_user)
+            await session.commit() # Коммитим сразу, чтобы получить ID
+            print(f"Added default user 'user' with ID={new_user.id} and password='password'.")
+
+    print("Users seeding finished.")
+
+
 async def main():
     # Главная функция для запуска
-    await seed_services()
+    # await seed_services()
     # Сюда можно будет добавить seed_users(), seed_orders() и т.д.
+    await seed_users()
 
 
 if __name__ == "__main__":

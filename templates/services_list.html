@@ -13,13 +13,20 @@
 
     <div class="services-grid">
         {% for service in services %}
-        <a href="{{ url_for('service_detail', service_id=service.id) }}" class="service-card">
-            <img src="{{ service.image_url if service.image_url else url_for('static', path='/images/services/placeholder.png') }}" alt="{{ service.title }}">
-            <div class="card-body">
-                <h3>{{ service.name }}</h3>
-                <p class="price">{{ "%.2f"|format(service.price) }} руб.</p>
+        <div class="service-card">
+            <a href="{{ url_for('service_detail', service_id=service.id) }}" class="service-card-link">
+                <img src="{{ service.image_url if service.image_url else url_for('static', path='/images/services/placeholder.png') }}" alt="{{ service.title }}">
+                <div class="card-body">
+                    <h3>{{ service.title }}</h3>
+                    <p class="price">{{ "%.2f"|format(service.price) }} руб.</p>
+                </div>
+            </a>
+            <div class="card-footer">
+                <form action="{{ url_for('add_to_cart', service_id=service.id) }}" method="post">
+                    <button type="submit" class="btn">В заявку</button>
+                </form>
             </div>
-        </a>
+        </div>
         {% endfor %}
     </div>
 </div>

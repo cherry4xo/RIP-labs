@@ -3,7 +3,7 @@ from decimal import Decimal
 import enum
 from typing import List, Optional
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func, text
+from sqlalchemy import select, func, text, update
 from sqlalchemy.orm import selectinload
 
 from app import models
@@ -69,7 +69,8 @@ class SqlAlchemyDatabaseRepo(AbstractDatabaseRepo):
             id=order_orm.id,
             status=order_orm.status.value,
             services=services,
-            total_price=float(total_price)
+            total_price=float(total_price),
+            created_by=order_orm.created_by
         )
     
     async def get_draft_order_by_user_id(self, user_id: int) -> Optional[domains.Order]:
@@ -130,3 +131,22 @@ class SqlAlchemyDatabaseRepo(AbstractDatabaseRepo):
         )
         count = await self._session.scalar(stmt)
         return count or 0
+    
+    async def get_order_by_id(self, order_id: int) -> Optional[domains.Order]:
+        order_orm = await self._session.get(models.Order, order_id)
+        return domains.Order(**order_orm.as_dict()) if order_orm else None
+
+    async def update_order_details(self, order_id: int, **kwargs) -> None:
+        stmt = update(models.Order).where(models.Order.id == order_id).values(**kwargs)
+        await self._session.execute(stmt)
+
+    async def update_service_in_order(self, order_id: int, service_id: int, **kwargs) -> None:
+        stmt = (
+            update(models.OrdersServices)
+            .where(
+                models.OrdersServices.order_id == order_id,
+                models.OrdersServices.service_id == service_id
+            )
+            .values(**kwargs)
+        )
+        await self._session.execute(stmt)

@@ -1,11 +1,13 @@
 import abc
+from datetime import datetime, timezone
 from decimal import Decimal
+import json
 from typing import List, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.settings import templates
-from app import domains
+from app import domains, models
 
 
 class ServiceUnavailableError(Exception):
@@ -53,6 +55,18 @@ class AbstractDatabaseRepo:
     
     @abc.abstractmethod
     async def get_cart_item_count(self, user_id: int) -> None:
+        raise NotImplementedError
+    
+    @abc.abstractmethod
+    async def get_order_by_id(self, order_id: int) -> Optional[domains.Order]:
+        raise NotImplementedError
+    
+    @abc.abstractmethod
+    async def update_order_details(self, order_id: int, **kwargs) -> None:
+        raise NotImplementedError
+    
+    @abc.abstractmethod
+    async def update_service_in_order(self, order_id: int, service_id: int, **kwargs) -> None:
         raise NotImplementedError
 
 
@@ -121,3 +135,41 @@ async def get_current_cart_item_count(
     user_id: int
 ) -> int:
     return await repo.get_cart_item_count(user_id=user_id)
+
+
+async def form_user_order(
+    repo: AbstractDatabaseRepo,
+    user_id: int,
+    form_data: domains.OrderFormationForm
+) -> domains.Order:
+    """
+    Сценарий: Оформление заказа-черновика.
+    1. Находит черновик заказа пользователя.
+    2. Валидирует, что услуги в форме соответствуют услугам в заказе.
+    3. Обновляет статус заказа на 'formed' и ставит дату формирования.
+    4. Сохраняет информацию о целевой системе и параметры сканирования.
+    """
+    draft_order = await repo.get_draft_order_by_user_id(user_id=user_id)
+    if not draft_order:
+        raise OrderNotFoundError("Не найдена активная заявка для оформления.")
+
+    await repo.update_order_details(
+        order_id=draft_order.id,
+        status=models.OrderStatus.FORMED,
+        formation_date=datetime.now(timezone.utc),
+        target_system_info=form_data.target_system_info
+    )
+
+    for service_param in form_data.services:
+        try:
+            scan_params_json = json.loads(service_param.scan_parameters)
+        except json.JSONDecodeError:
+            scan_params_json = {"error": "Invalid JSON", "raw": service_param.scan_parameters}
+
+        await repo.update_service_in_order(
+            order_id=draft_order.id,
+            service_id=service_param.service_id,
+            scan_parameters=scan_params_json
+        )
+    
+    return await repo.get_order_by_id(order_id=draft_order.id)

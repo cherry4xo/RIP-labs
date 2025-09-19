@@ -1,11 +1,11 @@
 from datetime import date
-from typing import Annotated, Optional
+from typing import Annotated, List, Optional
 
-from fastapi import APIRouter, HTTPException, Request, Depends
+from fastapi import APIRouter, Form, HTTPException, Request, Depends
 from fastapi.responses import HTMLResponse, RedirectResponse
 from starlette import status
 
-from app import use_cases
+from app import domains, use_cases
 from app.core.settings import templates
 from app.core.database import AsyncSession, get_db_session
 from app.repository import SqlAlchemyDatabaseRepo
@@ -75,6 +75,21 @@ async def order_detail_view(
     user_id: UserIdDep,
     cart_item_count: CartCountDep,
 ):
+    """Get order details HTML page render
+
+    Args:
+        request (Request): user's FastAPI request
+        order_id (int): order to get details id
+        db (DBSessionDep): DB repo DIP
+        user_id (UserIdDep): user to get order id
+        cart_item_count (CartCountDep): current user cart item count DIP
+
+    Raises:
+        HTTPException: 404 status code if order not found
+
+    Returns:
+        TemplateResponse: HTML page render
+    """
     repo = SqlAlchemyDatabaseRepo(db)
     order = await repo.get_order_details(order_id)
 
@@ -181,6 +196,7 @@ async def add_to_cart_view(
         await use_cases.add_service_to_cart(
             repo=repo, user_id=user_id, service_id=service_id
         )
+        await db.commit()
     except use_cases.ServiceUnavailableError as e:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
     
@@ -198,8 +214,48 @@ async def delete_cart_view(
     """HTTP метод (POST): Логическое удаление корзины."""
     repo = SqlAlchemyDatabaseRepo(db)
     await use_cases.delete_user_cart(repo=repo, user_id=user_id)
-    
+    await db.commit()
+
     return RedirectResponse(
         url=router.url_path_for("services_list"),
+        status_code=status.HTTP_303_SEE_OTHER
+    )
+
+
+@router.post("/order/form", name="form_order")
+async def form_order_view(
+    db: DBSessionDep,
+    user_id: UserIdDep,
+    target_system_info: str = Form(...),
+    service_ids: List[int] = Form(...),
+    scan_parameters: List[str] = Form(...)
+):
+    """HTTP метод (POST): Обработка формы оформления заказа."""
+    repo = SqlAlchemyDatabaseRepo(db)
+    
+    try:
+        service_params = [
+            domains.ServiceParameterInForm(service_id=sid, scan_parameters=param)
+            for sid, param in zip(service_ids, scan_parameters)
+        ]
+        form_data = domains.OrderFormationForm(
+            target_system_info=target_system_info,
+            services=service_params
+        )
+    except Exception: # Ловим ошибки валидации Pydantic
+        raise HTTPException(status_code=400, detail="Invalid form data.")
+
+    try:
+        formed_order = await use_cases.form_user_order(repo, user_id, form_data)
+        await db.commit()
+    except use_cases.OrderNotFoundError as e:
+        await db.rollback()
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception:
+        await db.rollback()
+        raise HTTPException(status_code=500, detail="Could not form the order.")
+
+    return RedirectResponse(
+        url=router.url_path_for("order_detail", order_id=formed_order.id),
         status_code=status.HTTP_303_SEE_OTHER
     )

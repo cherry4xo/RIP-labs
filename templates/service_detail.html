@@ -1,21 +1,24 @@
 {% extends 'base.html' %}
 
-{% block title %}{{ service.name }}{% endblock %}
+{% block title %}{{ service.title }}{% endblock %} 
 
 {% block content %}
 <div class="content-section">
     <h1 class="page-title">{{ service.title }}</h1>
     <div class="detail-container">
         <div class="detail-image">
-            <img src="{{ url_for('static', path='/images/services/' + service.image_url) }}" alt="{{ service.title }}">
+            <img src="{{ service.image_url if service.image_url else url_for('static', path='/images/services/placeholder.png') }}" alt="{{ service.title }}">
         </div>
         <div class="detail-info">
             <h2>Описание</h2>
             <p>{{ service.description }}</p>
             <div class="detail-price">
                 <span>Стоимость:</span>
-                <span class="price">{{ service.price }}</span>
+                <span class="price">{{ "%.2f"|format(service.price) }} руб.</span>
             </div>
+            <form action="{{ url_for('add_to_cart', service_id=service.id) }}" method="post" class="add-to-cart-form">
+                <button type="submit" class="btn">Добавить в заявку</button>
+            </form>
         </div>
     </div>
 </div>
