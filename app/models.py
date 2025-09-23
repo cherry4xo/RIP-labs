@@ -55,11 +55,14 @@ class Service(Base):
 
     id = Column("id", Integer, primary_key=True)
     title = Column("title", String(128))
+    short_description = Column("short_description", String)
     description = Column("description", String)
     status = Column("status", Enum(ServiceStatus, values_callable=lambda e: [x.value for x in e]), default=ServiceStatus.AVAILABLE)
     image_url = Column("image_url", String(256), nullable=True)
     price = Column("price", Numeric(10, 2), nullable=False)
     
+    impact_level = Column(Integer, nullable=False, server_default='1')
+
     assessment_type = Column("assessment_type", Enum(ServiceAssessmentType), nullable=False)
 
     order_associations = relationship("OrdersServices", back_populates="service")
@@ -92,7 +95,7 @@ class Order(Base):
 
     id = Column("id", Integer, primary_key=True)
     status = Column("status", Enum(OrderStatus, values_callable=lambda e: [x.value for x in e]), default=OrderStatus.DRAFT)
-    created_at = Column("created_at", DateTime)
+    created_at = Column("created_at", DateTime, nullable=False)
     created_by = Column("created_by", Integer, ForeignKey("users.id"))
 
     formation_date = Column("formation_date", DateTime, nullable=True)
@@ -100,7 +103,10 @@ class Order(Base):
     moderated_by = Column("moderated_by", ForeignKey("users.id"), nullable=True)
 
     target_system_info = Column(Text, nullable=True)
+    parameters_and_comments = Column(Text, nullable=True)
     total_cost = Column(Integer, nullable=True)
+
+    risk_score = Column(Integer, nullable=True)
 
     creator = relationship(
         "User",
@@ -133,9 +139,6 @@ class OrdersServices(Base):
     order_id = Column("order_id", ForeignKey("orders.id"), primary_key=True)
 
     price_at_order_time = Column(Numeric(10, 2), nullable=False)
-
-    scan_parameters = Column("scan_parameters", JSON, nullable=True)
-    report_url = Column("report_url", String(256), nullable=True)
 
     order = relationship("Order", back_populates="service_associations")
     service = relationship("Service", back_populates="order_associations")

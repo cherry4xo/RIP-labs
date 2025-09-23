@@ -4,7 +4,21 @@
 
 {% block content %}
 <div class="content-section">
-    <h1 class="page-title">Виды анализа</h1>
+    <div class="hero-section">
+        <h1 class="page-title">Виды анализа</h1>
+
+        {% if cart_id %}
+            <a href="{{ url_for('order_detail', order_id=cart_id) }}" class="cart-card">
+                <span>Текущая заявка</span>
+                <div class="cart-count">{{ cart_item_count }}</div>
+            </a>
+        {% else %}
+            <div class="cart-card">
+                <span>Текущая заявка</span>
+                <div class="cart-count">0</div>
+            </div>
+        {% endif %}
+    </div>
 
     <form action="{{ url_for('services_list') }}" method="get" class="search-form">
         <input type="text" name="query" class="search-input" placeholder="Поиск по наименованию..." value="{{ search_query }}">

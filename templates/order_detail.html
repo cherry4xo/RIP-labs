@@ -1,73 +1,103 @@
+<!-- templates/order_detail.html -->
 {% extends 'base.html' %}
 
 {% block title %}
-    {% if order %}
-        Заявка #{{ order.id }}
-    {% else %}
-        Корзина пуста
-    {% endif %}
+    {% if order %}Заявка #{{ order.id }}{% else %}Корзина пуста{% endif %}
 {% endblock %}
 
 {% block content %}
 <div class="content-section">
+
     {% if not order %}
         <h1 class="page-title">Ваша корзина пуста</h1>
         <p>Добавьте услуги из <a href="{{ url_for('services_list') }}">каталога</a>, чтобы оформить заявку.</p>
+    
     {% else %}
-        <h1 class="page-title">Просмотр заявки #{{ order.id }}</h1>
-
-        <div class="order-summary">
-            <h3>Детали заявки</h3>
-            <p><strong>Статус:</strong> {{ order.status }}</p>
-            {% if order.total_price %}
-                <p class="total"><strong>Итоговая стоимость:</strong> {{ "%.2f"|format(order.total_price) }} руб.</p>
-            {% endif %}
-        </div>
-
         {% if order.status == 'draft' %}
-            <h2 class="services-in-order-title">Оформление заявки</h2>
-            <form action="{{ url_for('form_order') }}" method="post" class="order-formation-form">
-                
-                <div class="form-group">
-                    <label for="target_system_info">Целевая система для анализа:</label>
-                    <textarea id="target_system_info" name="target_system_info" rows="3" placeholder="Например: сайт example.com, IP-адрес 1.2.3.4" required></textarea>
-                </div>
+            <h1 class="page-title">Оформление заявки</h1>
+        {% else %}
+            <h1 class="page-title">Заявка #{{ order.id }}</h1>
+        {% endif %}
 
-                <h3>Параметры для услуг:</h3>
-                {% for service in order.services %}
-                <div class="order-item-card form-item-card">
-                    <img src="{{ service.image_url if service.image_url else url_for('static', path='/images/services/placeholder.png') }}" alt="{{ service.title }}">
-                    <div class="order-item-details">
-                        <div class="order-item-name">{{ service.title }}</div>
+        <!-- Основной двухколоночный макет -->
+        <div class="order-layout">
+            
+            <!-- Левая колонка с формой или информацией -->
+            <div class="main-column">
+
+                <!-- Если заказ - черновик, показываем ФОРМУ -->
+                {% if order.status == 'draft' %}
+                <form action="{{ url_for('form_order') }}" method="post" class="order-formation-form">
+                    <div class="info-card">
                         <div class="form-group">
-                            <label for="params_{{ service.id }}">Параметры и комментарии:</label>
-                            <!-- Важно: передаем ID услуги в скрытом поле -->
-                            <input type="hidden" name="service_ids" value="{{ service.id }}">
-                            <textarea id="params_{{ service.id }}" name="scan_parameters" rows="2" placeholder='Пример: {"scope": "full", "exclude_paths": ["/admin"]}' required></textarea>
+                            <label for="target_system_info">Целевая система для анализа</label>
+                            <input type="text" id="target_system_info" name="target_system_info" placeholder="Google.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="parameters_and_comments">Параметры и комментарии</label>
+                            <textarea id="parameters_and_comments" name="parameters_and_comments" rows="3" placeholder='{"scope": "full", "exclude_paths": ["/admin"]}' required></textarea>
                         </div>
                     </div>
-                </div>
-                {% endfor %}
-                
-                <div class="form-actions">
-                    <button type="submit" class="btn">Оформить заявку</button>
-                </div>
-            </form>
-            
-            <form action="{{ url_for('delete_cart') }}" method="post" class="delete-form">
-                 <button type="submit" class="btn btn-danger">Удалить заявку (черновик)</button>
-            </form>
+                    
+                    <div class="form-actions">
+                        <button type="submit" class="btn">Оформить и рассчитать риск</button>
+                    </div>
+                </form>
 
-        {% else %}
-            <h2 class="services-in-order-title">Состав заявки</h2>
-            <div class="order-items-list">
-                {% for service in order.services %}
-                <div class="order-item-card">
-                    ...
+                <!-- Если заказ уже оформлен, показываем ИНФОРМАЦИЮ -->
+                {% else %}
+                <div class="info-card">
+                    <h2>Целевая система для анализа</h2>
+                    <p>{{ order.target_system_info or 'Не указана' }}</p>
                 </div>
-                {% endfor %}
+                <div class="info-card">
+                    <h2>Параметры и комментарии</h2>
+                    <!-- tojson - стандартный фильтр Jinja2 для красивого вывода JSON -->
+                    <pre><code>{{ order.parameters_and_comments | tojson(indent=2) }}</code></pre>
+                </div>
+                <div class="info-card risk-card">
+                    <h2>Итоговый уровень риска</h2>
+                    <div class="risk-score">{{ order.risk_score or 'N/A' }}/9</div>
+                </div>
+                {% endif %}
             </div>
-        {% endif %}
+
+            <!-- Правая колонка с составом заказа -->
+            <div class="side-column">
+                <div class="info-card">
+                    <h3>Состав заявки</h3>
+                    <p><strong>Статус:</strong> {{ order.status }}</p>
+                    <p class="total"><strong>Предварительная стоимость:</strong> {{ "%.2f"|format(order.total_price) }} руб.</p>
+                    
+                    {% if order.status == 'draft' %}
+                    <form action="{{ url_for('delete_cart') }}" method="post" class="delete-form">
+                        <button type="submit" class="btn btn-danger">Удалить черновик</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Список услуг внизу, под основной информацией -->
+        <h2 class="services-in-order-title">
+            Количество услуг: {{ order.services | sum(attribute='quantity') if order.services and order.services[0].quantity else order.services | length }}
+        </h2>
+        <div class="order-items-list">
+            {% for item in order.services %}
+            <div class="order-item-card">
+                <img src="{{ item.image_url if item.image_url else url_for('static', path='/images/services/placeholder.png') }}" alt="{{ item.title }}">
+                <div class="order-item-details">
+                    <h3 class="order-item-name">{{ item.title }}</h3>
+                    <p class="order-item-description">{{ item.description }}</p>
+                </div>
+                <!-- Пока мы не реализуем количество, это поле можно скрыть или не отображать
+                <div class="order-item-quantity">
+                    Количество: {{ item.quantity }}
+                </div>
+                -->
+            </div>
+            {% endfor %}
+        </div>
     {% endif %}
 </div>
 {% endblock %}

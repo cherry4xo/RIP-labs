@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 class Service(BaseModel):
     id: int
     title: str
+    short_description: Optional[str] = None
     description: Optional[str] = None
     status: str
     image_url: Optional[str] = None
@@ -35,13 +36,11 @@ class OrderServices(BaseModel):
     services: List[Service] = []
     total_price: float
     created_by: int
-
-
-class ServiceParameterInForm(BaseModel):
-    service_id: int
-    scan_parameters: str = Field(min_length=1)
+    target_system_info: Optional[str] = None
+    parameters_and_comments: Optional[str] = None
+    risk_score: Optional[int] = None
 
 
 class OrderFormationForm(BaseModel):
     target_system_info: str = Field(min_length=5)
-    services: List[ServiceParameterInForm]
+    parameters_and_comments: str

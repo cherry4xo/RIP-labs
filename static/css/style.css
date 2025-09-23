@@ -49,11 +49,17 @@ header {
 }
 .home-link:hover { opacity: 1; }
 .header-logo { height: 28px; }
+.content-section .hero-section {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
 .cart-card {
     display: flex; align-items: center; gap: 1rem;
     background-color: transparent; border: 1px solid var(--border-color);
     padding: 0.5rem 1rem; color: var(--text-secondary);
     transition: all 0.3s;
+    height: 60px;
 }
 .cart-card:hover { border-color: var(--primary-red); color: var(--text-primary); }
 .cart-count {
@@ -176,3 +182,149 @@ header {
 }
 .mm-label { font-size: 0.8rem; color: var(--text-secondary); display: block; margin-bottom: 0.25rem;}
 .mm-value { font-weight: 500; }
+
+.order-layout {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start; /* Колонки начинаются с самого верха */
+    margin-bottom: 3rem;
+}
+.main-column {
+    flex-grow: 1; /* Основная колонка занимает все доступное место */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.side-column {
+    flex-basis: 350px; /* Фиксированная ширина для боковой колонки */
+    flex-shrink: 0;
+}
+
+/* Общий стиль для информационных карточек */
+.info-card {
+    background: var(--card-background);
+    border: 1px solid var(--border-color);
+    padding: 2rem;
+}
+.info-card h2 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+.info-card p, .info-card input, .info-card textarea {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    color: var(--text-primary);
+}
+.info-card pre {
+    background-color: #000;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    white-space: pre-wrap; /* Перенос длинных строк */
+    word-break: break-all;
+}
+.info-card pre code {
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 1rem;
+}
+
+/* Карточка с уровнем риска */
+.risk-card {
+    margin-top: 1.5rem;
+    text-align: center;
+}
+.risk-card h2 {
+    margin-bottom: 0.75rem;
+}
+.risk-score {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--primary-red);
+}
+
+/* Стили для формы внутри карточек */
+.order-formation-form .form-group {
+    margin-bottom: 1.5rem;
+}
+.order-formation-form .form-group:last-child {
+    margin-bottom: 0;
+}
+.order-formation-form label {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+.order-formation-form input,
+.order-formation-form textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.5rem 0;
+    font-family: inherit;
+    resize: none;
+}
+.order-formation-form input:focus,
+.order-formation-form textarea:focus {
+    outline: none;
+    border-color: var(--primary-red);
+}
+.form-actions {
+    margin-top: 1.5rem;
+}
+
+/* Стили для боковой карточки */
+.side-column .info-card h3 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+.side-column .info-card p {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+.side-column .info-card .total {
+    color: var(--text-primary);
+    font-weight: bold;
+    font-size: 1.25rem;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+.side-column .delete-form {
+    margin-top: 1.5rem;
+}
+.side-column .delete-form .btn {
+    width: 100%;
+}
+
+/* Стили для карточек услуг внизу */
+.order-item-card {
+    /* ... (ваши существующие стили для order-item-card) ... */
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem;
+    background-color: var(--card-background);
+    border: 1px solid var(--border-color);
+}
+.order-item-card img {
+    width: 120px;
+    height: 80px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+.order-item-details {
+    flex-grow: 1;
+}
+.order-item-name {
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+}
+.order-item-description {
+    color: var(--text-secondary);
+}

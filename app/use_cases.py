@@ -156,20 +156,22 @@ async def form_user_order(
     await repo.update_order_details(
         order_id=draft_order.id,
         status=models.OrderStatus.FORMED,
-        formation_date=datetime.now(timezone.utc),
-        target_system_info=form_data.target_system_info
+        formation_date=datetime.now(),
+        target_system_info=form_data.target_system_info,
+        parameters_and_comments=form_data.parameters_and_comments,
+        risk_score=5
     )
 
-    for service_param in form_data.services:
-        try:
-            scan_params_json = json.loads(service_param.scan_parameters)
-        except json.JSONDecodeError:
-            scan_params_json = {"error": "Invalid JSON", "raw": service_param.scan_parameters}
+    # for service_param in form_data.services:
+    #     try:
+    #         scan_params_json = json.loads(service_param.scan_parameters)
+    #     except json.JSONDecodeError:
+    #         scan_params_json = {"error": "Invalid JSON", "raw": service_param.scan_parameters}
 
-        await repo.update_service_in_order(
-            order_id=draft_order.id,
-            service_id=service_param.service_id,
-            scan_parameters=scan_params_json
-        )
+    #     await repo.update_service_in_order(
+    #         order_id=draft_order.id,
+    #         service_id=service_param.service_id,
+    #         scan_parameters=scan_params_json
+    #     )
     
     return await repo.get_order_by_id(order_id=draft_order.id)

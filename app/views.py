@@ -8,6 +8,8 @@ from starlette import status
 from app import domains, use_cases
 from app.core.settings import templates
 from app.core.database import AsyncSession, get_db_session
+from app.file_storage.abstact import AbstractFileStorage
+from app.file_storage.minio_storage import MinioFileStorage
 from app.repository import SqlAlchemyDatabaseRepo
 
 
@@ -30,6 +32,13 @@ async def get_current_cart_id(db: DBSessionDep, user_id: UserIdDep) -> Optional[
     return cart.id if cart else None
 
 CartIdDep = Annotated[Optional[int], Depends(get_current_cart_id)]
+
+storage = MinioFileStorage()
+
+def get_file_storage() -> AbstractFileStorage:
+    return storage
+
+FileStorageDep = Annotated[AbstractFileStorage, Depends(get_file_storage)]
 
 router = APIRouter()
 
@@ -95,6 +104,8 @@ async def order_detail_view(
 
     if not order or order.created_by != user_id:
         raise HTTPException(status_code=404, detail="Order not found")
+
+    print(order)
 
     return templates.TemplateResponse(
         "order_detail.html", {
@@ -227,20 +238,15 @@ async def form_order_view(
     db: DBSessionDep,
     user_id: UserIdDep,
     target_system_info: str = Form(...),
-    service_ids: List[int] = Form(...),
-    scan_parameters: List[str] = Form(...)
+    parameters_and_comments: str = Form(...)
 ):
     """HTTP метод (POST): Обработка формы оформления заказа."""
     repo = SqlAlchemyDatabaseRepo(db)
     
     try:
-        service_params = [
-            domains.ServiceParameterInForm(service_id=sid, scan_parameters=param)
-            for sid, param in zip(service_ids, scan_parameters)
-        ]
         form_data = domains.OrderFormationForm(
             target_system_info=target_system_info,
-            services=service_params
+            parameters_and_comments=parameters_and_comments
         )
     except Exception: # Ловим ошибки валидации Pydantic
         raise HTTPException(status_code=400, detail="Invalid form data.")
@@ -251,9 +257,9 @@ async def form_order_view(
     except use_cases.OrderNotFoundError as e:
         await db.rollback()
         raise HTTPException(status_code=404, detail=str(e))
-    except Exception:
+    except Exception as e:
         await db.rollback()
-        raise HTTPException(status_code=500, detail="Could not form the order.")
+        raise HTTPException(status_code=500, detail=f"Could not form the order: {str(e)}.")
 
     return RedirectResponse(
         url=router.url_path_for("order_detail", order_id=formed_order.id),

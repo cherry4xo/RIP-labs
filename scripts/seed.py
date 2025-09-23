@@ -13,37 +13,35 @@ from app.models import Service, ServiceStatus, ServiceAssessmentType, User
 # --- Данные, которые мы хотим добавить ---
 SERVICES_DATA = [
     {
-        'title': 'Сканирование сетевого периметра',
-        'description': 'Автоматизированный поиск открытых портов, известных уязвимостей и ошибок конфигурации на ваших внешних IP-адресах.',
-        'price': Decimal('15000.00'),
-        'assessment_type': ServiceAssessmentType.NETWORK_SCAN,
-        'status': ServiceStatus.AVAILABLE,
-        'image_url': '/static/images/services/network.png'
-    },
-    {
-        'title': 'Пентест веб-приложения (базовый)',
-        'description': 'Анализ вашего сайта на наличие уязвимостей из списка OWASP Top 10, включая SQL-инъекции, XSS и CSRF.',
-        'price': Decimal('35000.00'),
-        'assessment_type': ServiceAssessmentType.WEB_APP_PENTEST,
-        'status': ServiceStatus.AVAILABLE,
-        'image_url': '/static/images/services/pentest.png'
-    },
-    {
-        'title': 'Аудит IT-инфраструктуры',
+        'title': 'Аудит IT-Инфраструктуры',
+        'short_description': 'Проверка конфигурации серверов, сети.',
         'description': 'Комплексная проверка конфигурации серверов, сетевого оборудования и политик безопасности на соответствие лучшим практикам.',
         'price': Decimal('50000.00'),
         'assessment_type': ServiceAssessmentType.INFRASTRUCTURE_AUDIT,
         'status': ServiceStatus.AVAILABLE,
-        'image_url': '/static/images/services/audit.png'
+        'image_url': 'http://localhost:9000/main/audit.png',
+        'impact_level': 3 # Критический ущерб
     },
     {
-        'title': 'Анализ на фишинг (устаревшая)',
-        'description': 'Эта услуга больше не предоставляется.',
-        'price': Decimal('10000.00'),
+        'title': 'Пентест веб-приложения',
+        'short_description': 'Анализ на OWASP Top 10.',
+        'description': 'Анализ вашего сайта на наличие уязвимостей из списка OWASP Top 10, включая SQL-инъекции, XSS и CSRF.',
+        'price': Decimal('35000.00'),
         'assessment_type': ServiceAssessmentType.WEB_APP_PENTEST,
-        'status': ServiceStatus.DELETED,
-        'image_url': '/static/images/services/phishing.png'
-    }
+        'status': ServiceStatus.AVAILABLE,
+        'image_url': 'http://localhost:9000/main/pentest.png',
+        'impact_level': 3 # Критический ущерб
+    },
+    {
+        'title': 'Сканирование сетевого периметра',
+        'short_description': 'Поиск открытых портов, уязвимостей.',
+        'description': 'Комплексная проверка конфигурации серверов, сетевого оборудования и политик безопасности на соответствие лучшим практикам.',
+        'price': Decimal('15000.00'),
+        'assessment_type': ServiceAssessmentType.NETWORK_SCAN,
+        'status': ServiceStatus.AVAILABLE,
+        'image_url': 'http://localhost:9000/main/network.png',
+        'impact_level': 2 # Средний ущерб
+    },
 ]
 
 
@@ -101,8 +99,7 @@ async def seed_users():
 
 async def main():
     # Главная функция для запуска
-    # await seed_services()
-    # Сюда можно будет добавить seed_users(), seed_orders() и т.д.
+    await seed_services()
     await seed_users()
 
 

@@ -70,7 +70,10 @@ class SqlAlchemyDatabaseRepo(AbstractDatabaseRepo):
             status=order_orm.status.value,
             services=services,
             total_price=float(total_price),
-            created_by=order_orm.created_by
+            created_by=order_orm.created_by,
+            target_system_info=order_orm.target_system_info,
+            parameters_and_comments=order_orm.parameters_and_comments,
+            risk_score=order_orm.risk_score
         )
     
     async def get_draft_order_by_user_id(self, user_id: int) -> Optional[domains.Order]:

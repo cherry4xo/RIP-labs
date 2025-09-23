@@ -12,19 +12,11 @@
             <header>
                 <a href="{{ url_for('services_list') }}" class="home-link">
                     <img src="{{ url_for('static', path='/logo.svg') }}" alt="Home" class="header-logo">
-                    <span>Домой</span>
+                    <span>Positive Tech</span>
                 </a>
-                {% if cart_id %}
-                    <a href="{{ url_for('order_detail', order_id=cart_id) }}" class="cart-card">
-                        <span>Текущая заявка</span>
-                        <div class="cart-count">{{ cart_item_count }}</div>
-                    </a>
-                {% else %}
-                    <div class="cart-card-disabled">
-                        <span>Текущая заявка</span>
-                        <div class="cart-count">0</div>
-                    </div>
-                {% endif %}
+                <a href="{{ url_for('services_list') }}" class="home-link">
+                    <img src="{{ url_for('static', path='/home.svg') }}" alt="Home" class="home-icon">
+                </a>
             </header>
             <main>
                 {% block content %}
