@@ -1,10 +1,17 @@
+<!-- services_list.html -->
 {% extends 'base.html' %}
 
 {% block title %}Список услуг{% endblock %}
 
 {% block content %}
 <div class="content-section">
-    <h1 class="page-title">Виды анализа</h1>
+    <div class="hero-section">
+        <h1 class="page-title">Виды анализа</h1>
+        <a href="{{ url_for('order_detail', order_id='ORD-001') }}" class="cart-card">
+            <span>Текущая заявка</span>
+            <div class="cart-count">{{ cart_item_count }}</div>
+        </a>
+    </div>
 
     <form action="{{ url_for('services_list') }}" method="get" class="search-form">
         <input type="text" name="query" class="search-input" placeholder="Поиск по наименованию..." value="{{ search_query }}">
@@ -13,13 +20,20 @@
 
     <div class="services-grid">
         {% for service in services %}
-        <a href="{{ url_for('service_detail', service_slug=service.slug) }}" class="service-card">
-            <img src="{{ url_for('static', path='/images/services/' + service.image_key) }}" alt="{{ service.name }}">
-            <div class="card-body">
-                <h3>{{ service.name }}</h3>
-                <p class="price">{{ service.price }}</p>
+        <div class="service-card">
+            <a href="{{ url_for('service_detail', service_slug=service.slug) }}" class="service-card-link">
+                <img src="{{ service.image_key }}" alt="{{ service.name }}">
+                <div class="card-body">
+                    <h3>{{ service.name }}</h3>
+                    <p class="price">{{ service.price }}</p>
+                </div>
+            </a>
+            <div class="card-footer">
+                <form action="#" method="post">
+                    <button type="submit" class="btn" disabled>В заявку</button>
+                </form>
             </div>
-        </a>
+        </div>
         {% endfor %}
     </div>
 </div>

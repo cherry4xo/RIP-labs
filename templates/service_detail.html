@@ -1,13 +1,16 @@
+<!-- service_detail.html -->
 {% extends 'base.html' %}
 
 {% block title %}{{ service.name }}{% endblock %}
 
 {% block content %}
 <div class="content-section">
+    <a href="{{ url_for('services_list') }}" class="back-link">← Назад к списку</a>
+    
     <h1 class="page-title">{{ service.name }}</h1>
     <div class="detail-container">
         <div class="detail-image">
-            <img src="{{ url_for('static', path='/images/services/' + service.image_key) }}" alt="{{ service.name }}">
+            <img src="{{ service.image_key }}" alt="{{ service.name }}">
         </div>
         <div class="detail-info">
             <h2>Описание</h2>
@@ -16,6 +19,9 @@
                 <span>Стоимость:</span>
                 <span class="price">{{ service.price }}</span>
             </div>
+            <form action="#" method="post" class="add-to-cart-form">
+                <button type="submit" class="btn" disabled>Добавить в заявку</button>
+            </form>
         </div>
     </div>
 </div>

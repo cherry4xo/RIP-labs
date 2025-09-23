@@ -1,24 +1,46 @@
+<!-- order_detail.html -->
 {% extends 'base.html' %}
 
-{% block title %}Заявка {{ order.id }}{% endblock %}
+{% block title %}Заявка #{{ order.id }}{% endblock %}
 
 {% block content %}
 <div class="content-section">
-    <h1 class="page-title">Просмотр заявки #{{ order.id }}</h1>
+    <h1 class="page-title">Заявка #{{ order.id }}</h1>
 
-    <div class="order-summary">
-        <h3>Детали заявки</h3>
-        <p><strong>Статус:</strong> {{ order.status }}</p>
-        <p class="total"><strong>Итоговая стоимость:</strong> {{ order.total_price }}</p>
+    <div class="order-layout">
+        <div class="main-column">
+            <div class="info-card">
+                <h2>Целевая система для анализа</h2>
+                <p>Google.com (демо-данные)</p>
+            </div>
+            <div class="info-card">
+                <h2>Параметры и комментарии</h2>
+                <pre><code>{"scope": "full"} (демо-данные)</code></pre>
+            </div>
+            <div class="info-card risk-card">
+                <h2>Итоговый уровень риска</h2>
+                <div class="risk-score">5/9</div>
+            </div>
+        </div>
+
+        <div class="side-column">
+            <div class="info-card">
+                <h3>Детали заявки</h3>
+                <p><strong>Статус:</strong> {{ order.status }}</p>
+                <p class="total"><strong>Итоговая стоимость:</strong> {{ order.total_price }}</p>
+            </div>
+        </div>
     </div>
 
     <h2 class="services-in-order-title">Состав заявки</h2>
     <div class="order-items-list">
         {% for item in order_services %}
         <div class="order-item-card">
-            <img src="{{ url_for('static', path='/images/services/' + item.details.image_key) }}" alt="{{ item.details.name }}">
-            <div class="order-item-name">{{ item.details.name }}</div>
-            <div class="order-item-price">{{ item.details.price }}</div>
+            <img src="{{ item.details.image_key }}" alt="{{ item.details.name }}">
+            <div class="order-item-details">
+                <h3 class="order-item-name">{{ item.details.name }}</h3>
+                <p class="order-item-description">{{ item.details.short_description }}</p>
+            </div>
             <div class="order-item-mm-field">
                 <span class="mm-label">Комментарий:</span>
                 <span class="mm-value">{{ item.comment }}</span>
