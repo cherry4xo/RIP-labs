@@ -12,46 +12,49 @@ router = APIRouter()
 
 SERVICES_DATA = [
     {
-        "slug": "sql-injection",
-        "name": "SQL Injection",
+        "id": "1",
+        "slug": "audit",
+        "name": "Аудит IT-Инфраструктуры",
         "short_description": "Поиск уязвимостей, связанных с базами данных.",
         "full_description": "Полный автоматизированный анализ вашего приложения на предмет уязвимостей к SQL-инъекциям. Мы проверяем все входные точки данных, чтобы гарантировать безопасность вашей базы данных от несанкционированного доступа и манипуляций.",
         "price": "15 000 руб.",
-        "image_key": "http://localhost:9000/main-lab-1/sql.png"
+        "image_key": "http://localhost:9000/main-lab-1/audit.png"
     },
     {
-        "slug": "cross-site-scripting",
-        "name": "Cross-site Scripting",
+        "id": "2",
+        "slug": "pentest",
+        "name": "Пентест веб-приложения",
         "short_description": "Анализ на инъекции вредоносного кода в страницы.",
         "full_description": "Тестирование на XSS-уязвимости для предотвращения атак, которые могут скомпрометировать данные ваших пользователей. Анализ включает проверку как хранимых, так и отраженных XSS-атак.",
         "price": "12 500 руб.",
-        "image_key": "http://localhost:9000/main-lab-1/xss.png"
+        "image_key": "http://localhost:9000/main-lab-1/pentest.png"
     },
     {
-        "slug": "csrf",
-        "name": "CSRF",
+        "id": "3",
+        "slug": "network",
+        "name": "Сканирование сетевого периметра",
         "short_description": "Проверка на подделку межсайтовых запросов.",
         "full_description": "Аудит безопасности для защиты от атак типа 'Межсайтовая подделка запроса' (CSRF), которые заставляют пользователей выполнять нежелательные действия в приложении, в котором они аутентифицированы.",
         "price": "10 000 руб.",
-        "image_key": "http://localhost:9000/main-lab-1/csrf.png"
+        "image_key": "http://localhost:9000/main-lab-1/network.png"
     }
 ]
 
 
 ORDER_DATA = {
-    "id": "ORD-001",
+    "id": "1",
     "status": "В обработке",
     "services": [
-        {"slug": "sql-injection", "comment": "Проверить в первую очередь"},
-        {"slug": "cross-site-scripting", "comment": "Базовый уровень проверки"}
+        {"id": "1", "slug": "audit", "comment": "Проверить в первую очередь"},
+        {"id": "2", "slug": "pentest", "comment": "Базовый уровень проверки"}
     ],
     "total_price": "27 500 руб." # Поле результата вычислений
 }
 
 
-def find_service(slug: str):
+def find_service(service_id: str):
     for service in SERVICES_DATA:
-        if service["slug"] == slug:
+        if service["id"] == service_id:
             return service
     return None
 
@@ -87,8 +90,8 @@ async def get_services_list(request: Request, query: Optional[str] = None):
     )
 
 
-@router.get("/service/{service_slug}", name="service_detail", status_code=status.HTTP_200_OK)
-async def get_servie_detail(request: Request, service_slug: str):
+@router.get("/service/{service_id}", name="service_detail", status_code=status.HTTP_200_OK)
+async def get_servie_detail(request: Request, service_id: str):
     """Get service detail HTML page
 
     Args:
@@ -101,7 +104,7 @@ async def get_servie_detail(request: Request, service_slug: str):
     Returns:
         TemplateResponse: HTML page render
     """
-    service = find_service(service_slug)
+    service = find_service(service_id=service_id)
     if not service:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Service not found")
     
@@ -135,7 +138,7 @@ async def get_order_detail(request: Request, order_id: str):
     
     order_services = []
     for item in ORDER_DATA["services"]:
-        service_data = find_service(item["slug"])
+        service_data = find_service(item["id"])
         if service_data:
             order_services.append({
                 "details": service_data,

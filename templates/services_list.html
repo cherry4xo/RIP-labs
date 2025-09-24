@@ -7,7 +7,7 @@
 <div class="content-section">
     <div class="hero-section">
         <h1 class="page-title">Виды анализа</h1>
-        <a href="{{ url_for('order_detail', order_id='ORD-001') }}" class="cart-card">
+        <a href="{{ url_for('order_detail', order_id='1') }}" class="cart-card">
             <span>Текущая заявка</span>
             <div class="cart-count">{{ cart_item_count }}</div>
         </a>
@@ -21,7 +21,7 @@
     <div class="services-grid">
         {% for service in services %}
         <div class="service-card">
-            <a href="{{ url_for('service_detail', service_slug=service.slug) }}" class="service-card-link">
+            <a href="{{ url_for('service_detail', service_id=service.id) }}" class="service-card-link">
                 <img src="{{ service.image_key }}" alt="{{ service.name }}">
                 <div class="card-body">
                     <h3>{{ service.name }}</h3>
