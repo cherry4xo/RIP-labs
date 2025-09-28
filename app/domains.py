@@ -1,8 +1,15 @@
 from datetime import datetime
+import enum
 from typing import List, Optional
 from decimal import Decimal
 
 from pydantic import BaseModel, Field
+
+
+class ProtectionLevel(enum.StrEnum):
+    NONE = "none"
+    BASIC = "basic"
+    FULL = "full"
 
 
 class Service(BaseModel):
@@ -13,6 +20,13 @@ class Service(BaseModel):
     status: str
     image_url: Optional[str] = None
     price: Decimal
+    impact_level: int
+
+
+class ServiceInOrder(BaseModel):
+    service: Service
+    protection_level: str
+    comment: Optional[str] = None
 
 
 class User(BaseModel):
@@ -33,14 +47,19 @@ class Order(BaseModel):
 class OrderServices(BaseModel):
     id: int
     status: str
-    services: List[Service] = []
+    services: List[ServiceInOrder] = []
     total_price: float
     created_by: int
     target_system_info: Optional[str] = None
-    parameters_and_comments: Optional[str] = None
     risk_score: Optional[int] = None
+
+
+class ServiceInForm(BaseModel):
+    service_id: int
+    protection_level: ProtectionLevel
+    comment: Optional[str] = None
 
 
 class OrderFormationForm(BaseModel):
     target_system_info: str = Field(min_length=5)
-    parameters_and_comments: str
+    services: List[ServiceInForm]

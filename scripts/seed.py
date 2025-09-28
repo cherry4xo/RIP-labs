@@ -42,6 +42,24 @@ SERVICES_DATA = [
         'image_url': 'http://localhost:9000/main/network.png',
         'impact_level': 2 # Средний ущерб
     },
+    {
+        'title': 'DDoS-атака (симуляция)',
+        'description': 'Тестирование на отказ в обслуживании.', # Краткое описание
+        'price': Decimal('25000.00'),
+        'assessment_type': ServiceAssessmentType.NETWORK_SCAN,
+        'status': ServiceStatus.AVAILABLE,
+        'image_url': 'http://localhost:9000/main/ddos.png',
+        'impact_level': 2 # Средний ущерб (влияет на доступность, но не на данные)
+    },
+    {
+        'title': 'Аудит на Cross-Site Scripting (XSS)',
+        'description': 'Проверка на внедрение вредоносных скриптов.', # Краткое описание
+        'price': Decimal('18000.00'),
+        'assessment_type': ServiceAssessmentType.WEB_APP_PENTEST,
+        'status': ServiceStatus.AVAILABLE,
+        'image_url': 'http://localhost:9000/main/xss.png',
+        'impact_level': 2 # Средний ущерб (может вести к краже сессий пользователей)
+    },
 ]
 
 

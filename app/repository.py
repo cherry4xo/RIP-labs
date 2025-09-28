@@ -62,17 +62,23 @@ class SqlAlchemyDatabaseRepo(AbstractDatabaseRepo):
         if not order_orm:
             return None
 
-        services = [domains.Service(**assoc.service.as_dict()) for assoc in order_orm.service_associations]
+        services_in_order = [
+            domains.ServiceInOrder(
+                service=domains.Service(**assoc.service.as_dict()),
+                protection_level=assoc.protection_level.value, # Передаем значение Enum
+                comment=assoc.comment
+            ) for assoc in order_orm.service_associations
+        ]
+        
         total_price = sum(assoc.price_at_order_time for assoc in order_orm.service_associations)
 
         return domains.OrderServices(
             id=order_orm.id,
             status=order_orm.status.value,
-            services=services,
+            services=services_in_order, # <<< Передаем правильный список
             total_price=float(total_price),
             created_by=order_orm.created_by,
             target_system_info=order_orm.target_system_info,
-            parameters_and_comments=order_orm.parameters_and_comments,
             risk_score=order_orm.risk_score
         )
     

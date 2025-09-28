@@ -142,36 +142,49 @@ async def form_user_order(
     user_id: int,
     form_data: domains.OrderFormationForm
 ) -> domains.Order:
-    """
-    Сценарий: Оформление заказа-черновика.
-    1. Находит черновик заказа пользователя.
-    2. Валидирует, что услуги в форме соответствуют услугам в заказе.
-    3. Обновляет статус заказа на 'formed' и ставит дату формирования.
-    4. Сохраняет информацию о целевой системе и параметры сканирования.
-    """
     draft_order = await repo.get_draft_order_by_user_id(user_id=user_id)
     if not draft_order:
         raise OrderNotFoundError("Не найдена активная заявка для оформления.")
 
+    # 1. Обновляем параметры для каждой услуги в заказе
+    for service_data in form_data.services:
+        await repo.update_service_in_order(
+            order_id=draft_order.id,
+            service_id=service_data.service_id,
+            protection_level=service_data.protection_level,
+            comment=service_data.comment
+        )
+
+    # 2. Получаем обновленные данные, чтобы выполнить расчет
+    order_details = await repo.get_order_details(order_id=draft_order.id)
+    if not order_details:
+        raise OrderNotFoundError("Не удалось получить детали заказа после обновления.")
+
+    # 3. --- ЛОГИКА РАСЧЕТА РИСКА ---
+    protection_to_likelihood = {
+        "none": 3,  # Высокая вероятность
+        "basic": 2, # Средняя
+        "full": 1,  # Низкая
+    }
+    max_risk_score = 0
+
+    for item in order_details.services: # item - это уже ServiceInOrder
+        service_full = await repo.get_service_by_id(item.service.id)
+        
+        likelihood = protection_to_likelihood.get(item.protection_level, 3)
+        impact = service_full.impact_level
+        
+        risk_score = likelihood * impact
+        if risk_score > max_risk_score:
+            max_risk_score = risk_score
+    
+    # 4. Обновляем основную информацию о заказе с итоговым результатом
     await repo.update_order_details(
         order_id=draft_order.id,
         status=models.OrderStatus.FORMED,
-        formation_date=datetime.now(),
+        formation_date=datetime.now(timezone.utc).replace(tzinfo=None),
         target_system_info=form_data.target_system_info,
-        parameters_and_comments=form_data.parameters_and_comments,
-        risk_score=5
+        risk_score=max_risk_score
     )
-
-    # for service_param in form_data.services:
-    #     try:
-    #         scan_params_json = json.loads(service_param.scan_parameters)
-    #     except json.JSONDecodeError:
-    #         scan_params_json = {"error": "Invalid JSON", "raw": service_param.scan_parameters}
-
-    #     await repo.update_service_in_order(
-    #         order_id=draft_order.id,
-    #         service_id=service_param.service_id,
-    #         scan_parameters=scan_params_json
-    #     )
     
     return await repo.get_order_by_id(order_id=draft_order.id)

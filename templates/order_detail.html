@@ -2,101 +2,82 @@
 {% extends 'base.html' %}
 
 {% block title %}
-    {% if order %}Заявка #{{ order.id }}{% else %}Корзина пуста{% endif %}
+    {% if order %}Оформление заявки #{{ order.id }}{% else %}Корзина пуста{% endif %}
 {% endblock %}
 
 {% block content %}
 <div class="content-section">
 
-    {% if not order %}
+    {% if not order or not order.services %}
         <h1 class="page-title">Ваша корзина пуста</h1>
         <p>Добавьте услуги из <a href="{{ url_for('services_list') }}">каталога</a>, чтобы оформить заявку.</p>
     
-    {% else %}
-        {% if order.status == 'draft' %}
-            <h1 class="page-title">Оформление заявки</h1>
-        {% else %}
-            <h1 class="page-title">Заявка #{{ order.id }}</h1>
-        {% endif %}
+    {% elif order.status == 'draft' %}
+        <h1 class="page-title">Оформление заявки</h1>
 
         <!-- Основной двухколоночный макет -->
         <div class="order-layout">
             
-            <!-- Левая колонка с формой или информацией -->
+            <!-- Левая колонка с формой -->
             <div class="main-column">
-
-                <!-- Если заказ - черновик, показываем ФОРМУ -->
-                {% if order.status == 'draft' %}
                 <form action="{{ url_for('form_order') }}" method="post" class="order-formation-form">
+                    
                     <div class="info-card">
                         <div class="form-group">
                             <label for="target_system_info">Целевая система для анализа</label>
-                            <input type="text" id="target_system_info" name="target_system_info" placeholder="Google.com" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="parameters_and_comments">Параметры и комментарии</label>
-                            <textarea id="parameters_and_comments" name="parameters_and_comments" rows="3" placeholder='{"scope": "full", "exclude_paths": ["/admin"]}' required></textarea>
+                            <input type="text" id="target_system_info" name="target_system_info" placeholder="yandex.ru" required>
                         </div>
                     </div>
+
+                    <h2 class="form-section-title">Параметры для услуг</h2>
+                    
+                    {% for item in order.services %}
+                    <div class="info-card service-form-card">
+                        <h3>{{ item.service.title }}</h3>
+                        <input type="hidden" name="service_ids" value="{{ item.service.id }}">
+                        
+                        <div class="form-group">
+                            <label for="protection_{{ item.service.id }}">Уровень вашей защиты</label>
+                            <select id="protection_{{ item.service.id }}" name="protection_levels" required>
+                                <option value="none">Нет защиты</option>
+                                <option value="basic" selected>Базовая (WAF)</option>
+                                <option value="full">Полная (WAF + безопасный код)</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="comment_{{ item.service.id }}">Комментарий (опционально)</label>
+                            <input type="text" id="comment_{{ item.service.id }}" name="comments" placeholder="Например, версия ПО: WordPress 5.8">
+                        </div>
+                    </div>
+                    {% endfor %}
                     
                     <div class="form-actions">
                         <button type="submit" class="btn">Оформить и рассчитать риск</button>
                     </div>
                 </form>
-
-                <!-- Если заказ уже оформлен, показываем ИНФОРМАЦИЮ -->
-                {% else %}
-                <div class="info-card">
-                    <h2>Целевая система для анализа</h2>
-                    <p>{{ order.target_system_info or 'Не указана' }}</p>
-                </div>
-                <div class="info-card">
-                    <h2>Параметры и комментарии</h2>
-                    <!-- tojson - стандартный фильтр Jinja2 для красивого вывода JSON -->
-                    <pre><code>{{ order.parameters_and_comments | tojson(indent=2) }}</code></pre>
-                </div>
-                <div class="info-card risk-card">
-                    <h2>Итоговый уровень риска</h2>
-                    <div class="risk-score">{{ order.risk_score or 'N/A' }}/9</div>
-                </div>
-                {% endif %}
             </div>
 
-            <!-- Правая колонка с составом заказа -->
+            <!-- Правая колонка с деталями заявки -->
             <div class="side-column">
                 <div class="info-card">
-                    <h3>Состав заявки</h3>
+                    <h3>Детали заявки</h3>
                     <p><strong>Статус:</strong> {{ order.status }}</p>
-                    <p class="total"><strong>Предварительная стоимость:</strong> {{ "%.2f"|format(order.total_price) }} руб.</p>
+                    <p class="total"><strong>Предварительная стоимость:</strong><br>{{ "%.2f"|format(order.total_price) }} руб.</p>
                     
-                    {% if order.status == 'draft' %}
                     <form action="{{ url_for('delete_cart') }}" method="post" class="delete-form">
                         <button type="submit" class="btn btn-danger">Удалить черновик</button>
                     </form>
-                    {% endif %}
                 </div>
             </div>
         </div>
 
-        <!-- Список услуг внизу, под основной информацией -->
-        <h2 class="services-in-order-title">
-            Количество услуг: {{ order.services | sum(attribute='quantity') if order.services and order.services[0].quantity else order.services | length }}
-        </h2>
-        <div class="order-items-list">
-            {% for item in order.services %}
-            <div class="order-item-card">
-                <img src="{{ item.image_url if item.image_url else url_for('static', path='/images/services/placeholder.png') }}" alt="{{ item.title }}">
-                <div class="order-item-details">
-                    <h3 class="order-item-name">{{ item.title }}</h3>
-                    <p class="order-item-description">{{ item.description }}</p>
-                </div>
-                <!-- Пока мы не реализуем количество, это поле можно скрыть или не отображать
-                <div class="order-item-quantity">
-                    Количество: {{ item.quantity }}
-                </div>
-                -->
-            </div>
-            {% endfor %}
+    {% else %} <!-- Если заказ уже оформлен -->
+        <h1 class="page-title">Заявка #{{ order.id }}</h1>
+        <div class="info-card">
+            <h2>Заявка уже оформлена</h2>
+            <p>Статус вашей заявки: <strong>{{ order.status }}</strong>. Вы не можете редактировать ее.</p>
+            <p>Итоговый уровень риска: <strong>{{ order.risk_score or 'N/A' }}/9</strong></p>
         </div>
     {% endif %}
 </div>

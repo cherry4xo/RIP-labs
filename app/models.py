@@ -16,6 +16,8 @@ from sqlalchemy import (Boolean,
                         JSON
 )
 
+from app.domains import ProtectionLevel
+
 
 class OrderStatus(enum.StrEnum):
     DRAFT = "draft"
@@ -103,7 +105,6 @@ class Order(Base):
     moderated_by = Column("moderated_by", ForeignKey("users.id"), nullable=True)
 
     target_system_info = Column(Text, nullable=True)
-    parameters_and_comments = Column(Text, nullable=True)
     total_cost = Column(Integer, nullable=True)
 
     risk_score = Column(Integer, nullable=True)
@@ -139,6 +140,9 @@ class OrdersServices(Base):
     order_id = Column("order_id", ForeignKey("orders.id"), primary_key=True)
 
     price_at_order_time = Column(Numeric(10, 2), nullable=False)
+
+    protection_level = Column("protection_level", Enum(ProtectionLevel, values_callable=lambda e: [x.value for x in e]), default=ProtectionLevel.NONE, nullable=False)
+    comment = Column(Text, nullable=True)
 
     order = relationship("Order", back_populates="service_associations")
     service = relationship("Service", back_populates="order_associations")

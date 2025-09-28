@@ -328,3 +328,188 @@ header {
 .order-item-description {
     color: var(--text-secondary);
 }
+.form-section-title {
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+    font-size: 2rem;
+    font-weight: 700;
+}
+
+/* Карточка для полей одной услуги в форме */
+.service-form-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem; /* Отступ между полями внутри карточки */
+}
+.service-form-card h3 {
+    font-size: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.service-form-card .form-group {
+    margin: 0;
+}
+
+/* Стилизация select */
+.order-formation-form select {
+    width: 100%;
+    background-color: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-family: inherit;
+}
+.order-formation-form select:focus {
+    outline: none;
+    border-color: var(--primary-red);
+}
+
+/* Мета-информация в карточке оформленного заказа */
+.order-item-meta {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+}
+.order-item-meta strong {
+    color: var(--text-primary);
+    font-weight: 600;
+}
+/* static/css/style.css */
+
+/* ... (все ваши предыдущие стили) ... */
+
+/* === НОВЫЕ СТИЛИ для страницы ОФОРМЛЕНИЯ ЗАКАЗА === */
+
+/* Двухколоночный макет */
+.order-layout {
+    display: flex;
+    gap: 2rem;
+    align-items: flex-start;
+    margin-bottom: 3rem;
+}
+.main-column {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.side-column {
+    flex-basis: 350px;
+    flex-shrink: 0;
+}
+
+/* Общий стиль для информационных карточек */
+.info-card {
+    background: transparent;
+    border: 1px solid var(--border-color);
+    padding: 2rem;
+}
+.info-card h2, .info-card h3 {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+}
+
+/* Стили для формы */
+.order-formation-form .form-group {
+    margin-bottom: 1.5rem;
+}
+.order-formation-form .form-group:last-child {
+    margin-bottom: 0;
+}
+.order-formation-form label {
+    display: block;
+    font-size: 1rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.5rem;
+}
+.order-formation-form input[type="text"],
+.order-formation-form textarea {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.5rem 0;
+    font-family: inherit;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+    resize: none;
+}
+.order-formation-form input:focus,
+.order-formation-form textarea:focus {
+    outline: none;
+    border-color: var(--primary-red);
+}
+
+/* Стилизация select, как на скриншоте */
+.order-formation-form select {
+    appearance: none; /* Убираем стандартную стрелку */
+    -webkit-appearance: none;
+    width: 100%;
+    background-color: var(--background-dark);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.75rem;
+    font-size: 1rem;
+    font-family: inherit;
+    cursor: pointer;
+    /* Добавляем кастомную стрелку */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23FFF' d='M6 8L0 2l1.4-1.4L6 5.2 10.6.6 12 2z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.75rem center;
+}
+.order-formation-form select:focus {
+    outline: none;
+    border-color: var(--primary-red);
+}
+
+/* Заголовок "Параметры для услуг" */
+.form-section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-top: 2rem; /* Отступ сверху, как вы просили */
+    margin-bottom: 1.5rem;
+}
+
+/* Карточка для каждой услуги в форме */
+.service-form-card {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+.service-form-card h3 {
+    padding: 0;
+    margin: 0;
+    border: none;
+}
+
+.form-actions {
+    margin-top: 1.5rem;
+}
+
+/* Правая колонка */
+.side-column .info-card h3 {
+    font-size: 1.5rem;
+}
+.side-column .info-card p {
+    font-size: 1.1rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+}
+.side-column .info-card .total {
+    border: none;
+    padding: 0;
+    margin: 0;
+    color: var(--text-primary);
+    font-weight: bold;
+    font-size: 1.25rem;
+}
+.side-column .delete-form {
+    margin-top: 1.5rem;
+}
+.side-column .delete-form .btn {
+    width: 100%;
+}

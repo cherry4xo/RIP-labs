@@ -238,15 +238,25 @@ async def form_order_view(
     db: DBSessionDep,
     user_id: UserIdDep,
     target_system_info: str = Form(...),
-    parameters_and_comments: str = Form(...)
+    service_ids: List[int] = Form(...),
+    protection_levels: List[str] = Form(...),
+    comments: List[str] = Form(...)
 ):
     """HTTP метод (POST): Обработка формы оформления заказа."""
     repo = SqlAlchemyDatabaseRepo(db)
     
     try:
+        # Собираем данные в Pydantic-модель для валидации
+        services_in_form = [
+            domains.ServiceInForm(
+                service_id=sid,
+                protection_level=level,
+                comment=comment
+            ) for sid, level, comment in zip(service_ids, protection_levels, comments)
+        ]
         form_data = domains.OrderFormationForm(
             target_system_info=target_system_info,
-            parameters_and_comments=parameters_and_comments
+            services=services_in_form
         )
     except Exception: # Ловим ошибки валидации Pydantic
         raise HTTPException(status_code=400, detail="Invalid form data.")
