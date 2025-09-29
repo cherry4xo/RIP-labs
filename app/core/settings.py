@@ -24,5 +24,10 @@ MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "cherry4xo")
 MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "25612812")
 MINIO_BUCKET_NAME = os.getenv("MINIO_BUCKET_NAME", "main")
 
+SECRET_KEY = os.getenv("SECRET_KEY")
+ALGORITHM = "HS256"
+ACCESS_TOKEN_EXPIRE_MINUTES = 30
+REFRESH_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 7 days
+
 
 templates = Jinja2Templates(directory="templates")

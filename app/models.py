@@ -16,26 +16,7 @@ from sqlalchemy import (Boolean,
                         JSON
 )
 
-from app.domains import ProtectionLevel
-
-
-class OrderStatus(enum.StrEnum):
-    DRAFT = "draft"
-    DELETED = "deleted"
-    FORMED = "formed"
-    COMPLETED = "completed"
-    CANCELLED = "cancelled"
-
-
-class ServiceStatus(enum.StrEnum):
-    DELETED = "deleted"
-    AVAILABLE = "available"
-
-
-class ServiceAssessmentType(enum.StrEnum):
-    NETWORK_SCAN = "network_scan"
-    WEB_APP_PENTEST = "web_app_pentest"
-    INFRASTRUCTURE_AUDIT = "infrastructure_audit"
+from app.domains import ProtectionLevel, ServiceAssessmentType, ServiceStatus, OrderStatus
 
 
 class Base:

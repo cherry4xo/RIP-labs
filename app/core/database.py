@@ -1,6 +1,7 @@
 import contextlib
-from typing import Any, AsyncIterator
+from typing import Annotated, Any, AsyncIterator
 
+from fastapi import Depends
 from sqlalchemy.ext.asyncio import (
     AsyncConnection,
     AsyncSession,
@@ -62,3 +63,6 @@ sessionmanager = DatabaseSessionManager(settings.DB_URL, {"echo": settings.ECHO_
 async def get_db_session():
     async with sessionmanager.session() as session:
         yield session
+
+
+DBSessionDep = Annotated[AsyncSession, Depends(get_db_session)]

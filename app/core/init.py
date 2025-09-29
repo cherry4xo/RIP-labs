@@ -4,13 +4,16 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.core.middlewares import init_middlewares
-from app.views import router
+# from app.views import router
+from app.api import auth, orders, services
 from app.core.database import sessionmanager
 from app.models import Base
 
 
 def add_routes(app: FastAPI):
-    app.include_router(router)
+    app.include_router(auth.router)
+    app.include_router(orders.router)
+    app.include_router(services.router)
 
 
 @asynccontextmanager

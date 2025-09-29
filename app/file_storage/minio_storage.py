@@ -1,11 +1,12 @@
 import json
 import os
-from typing import IO
+from typing import IO, Annotated
+from fastapi import Depends
 from minio import Minio
 from minio.error import S3Error
 
 from app.core import settings
-from app.file_storage.abstact import AbstractFileStorage
+from app.interfaces import AbstractFileStorage
 
 
 class MinioFileStorage(AbstractFileStorage):
@@ -65,3 +66,10 @@ class MinioFileStorage(AbstractFileStorage):
             self.client.remove_object(self.bucket_name, filename)
         except S3Error as e:
             print(f"Error deleting from MinIO: {e}")
+
+
+def get_file_storage() -> AbstractFileStorage:
+    return MinioFileStorage
+
+
+FileStorageDep = Annotated[AbstractFileStorage, Depends(get_file_storage)]
