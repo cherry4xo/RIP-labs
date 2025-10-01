@@ -4,7 +4,7 @@ from datetime import datetime, date
 import enum
 from typing import List, Optional
 from decimal import Decimal
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 
 # --- Enums ---
 class ProtectionLevel(enum.StrEnum):
@@ -40,14 +40,24 @@ class ServiceBase(BaseModel):
 class ServiceCreate(ServiceBase):
     pass
 
+class ServiceUpdatePartial(BaseModel):
+    title: Optional[str] = Field(min_length=3, max_length=128, default=None)
+    short_description: Optional[str] = None
+    description: Optional[str] = None
+    price: Optional[Decimal] = Field(gt=0, default=None)
+    impact_level: Optional[int] = Field(ge=1, le=3, default=None)
+    assessment_type: Optional[ServiceAssessmentType] = None
+    image_url: Optional[str] = None
+
 class ServiceUpdate(ServiceBase):
     pass
 
 class Service(ServiceBase):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     status: ServiceStatus
     image_url: Optional[str] = None
-    class Config: from_attributes = True
 
 # --- User & Auth Schemas ---
 class UserCreate(BaseModel):
@@ -58,10 +68,11 @@ class UserUpdate(BaseModel):
     login: Optional[str] = Field(min_length=3, default=None)
 
 class UserRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     login: str
     is_moderator: bool
-    class Config: from_attributes = True
 
 class Token(BaseModel):
     access_token: str
@@ -101,22 +112,25 @@ class ServiceInOrder(BaseModel):
     price_at_order_time: Decimal
 
 class OrderDetails(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     status: OrderStatus
     created_at: datetime
     creator_login: str
+    created_by: int
     moderator_login: Optional[str] = None
     formation_date: Optional[datetime] = None
     completion_date: Optional[datetime] = None
     target_system_info: Optional[str] = None
     risk_score: Optional[int] = None
     services: List[ServiceInOrder] = []
-    class Config: from_attributes = True
 
 class OrderSummary(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
     id: int
     status: OrderStatus
     formation_date: Optional[datetime] = None
     risk_score: Optional[int] = None
     creator_login: str
-    class Config: from_attributes = True

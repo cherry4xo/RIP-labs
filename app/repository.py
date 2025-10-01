@@ -18,9 +18,8 @@ class SqlAlchemyDatabaseRepo(AbstractDatabaseRepo):
 
     # --- User Methods ---
     async def get_user_by_id(self, user_id: int) -> Optional[models.User]:
-        # Внутренние методы могут возвращать ORM, но публичные - нет.
-        # Этот метод нужен для get_current_user, который вернет UserRead.
-        return await self._session.get(models.User, user_id)
+        user_orm = await self._session.get(models.User, user_id)
+        return domains.UserRead.model_validate(user_orm) if user_orm else None
 
     async def get_user_by_login(self, login: str) -> Optional[models.User]:
         stmt = select(models.User).where(models.User.login == login)
@@ -62,7 +61,7 @@ class SqlAlchemyDatabaseRepo(AbstractDatabaseRepo):
         await self._session.flush()
         return domains.Service.model_validate(new_service_orm)
 
-    async def update_service(self, service_id: int, service_data: domains.ServiceUpdate, image_url: Optional[str] = None) -> Optional[domains.Service]:
+    async def update_service(self, service_id: int, service_data: domains.ServiceUpdatePartial, image_url: Optional[str] = None) -> Optional[domains.Service]:
         service_orm = await self._session.get(models.Service, service_id)
         if not service_orm:
             return None
@@ -85,20 +84,21 @@ class SqlAlchemyDatabaseRepo(AbstractDatabaseRepo):
         return True
 
     # --- Order & Cart Methods ---
-    async def get_draft_order_by_user_id(self, user_id: int) -> Optional[models.Order]:
-        # Этот метод является внутренним для use cases, поэтому может возвращать ORM
+    async def get_draft_order_by_user_id(self, user_id: int) -> Optional[domains.OrderDetails]:
         stmt = select(models.Order).where(
             models.Order.created_by == user_id,
             models.Order.status == models.OrderStatus.DRAFT
         )
-        return await self._session.scalar(stmt)
+        order_orm = await self._session.scalar(stmt)
+        if not order_orm:
+            return None
+        return await self.get_full_order_details(order_orm.id)
 
-    async def create_draft_order(self, user_id: int) -> models.Order:
-        # Аналогично, внутренний метод
+    async def create_draft_order(self, user_id: int) -> domains.OrderDetails:
         new_order = models.Order(created_by=user_id, created_at=datetime.now(timezone.utc))
         self._session.add(new_order)
         await self._session.flush()
-        return new_order
+        return await self.get_full_order_details(new_order.id)
 
     async def add_service_to_order(self, order_id: int, service_id: int, price: Decimal) -> None:
         new_assoc = models.OrdersServices(
@@ -122,11 +122,14 @@ class SqlAlchemyDatabaseRepo(AbstractDatabaseRepo):
         result = await self._session.execute(stmt)
         return result.rowcount > 0
 
-    async def get_orders_with_filters(self, status: Optional[str], date_from: Optional[date], date_to: Optional[date]) -> List[domains.OrderSummary]:
+    async def get_orders_with_filters(self, user_id: int, status: Optional[str], date_from: Optional[date], date_to: Optional[date]) -> List[domains.OrderSummary]:
         stmt = (
-            select(models.Order, models.User.login)
-            .join(models.User, models.Order.created_by == models.User.id)
-            .where(models.Order.status.notin_([models.OrderStatus.DRAFT, models.OrderStatus.DELETED]))
+            select(models.Order)
+            .where(
+                models.Order.created_by == user_id,
+                models.Order.status.notin_([models.OrderStatus.DRAFT, models.OrderStatus.DELETED])
+            )
+            .options(selectinload(models.Order.creator))
             .order_by(models.Order.created_at.desc())
         )
         if status:
@@ -136,12 +139,17 @@ class SqlAlchemyDatabaseRepo(AbstractDatabaseRepo):
         if date_to:
             stmt = stmt.where(models.Order.formation_date <= date_to)
         
-        result = await self._session.execute(stmt)
-        summaries = []
-        for order_orm, login in result.all():
-            summary = domains.OrderSummary.model_validate(order_orm)
-            summary.creator_login = login
-            summaries.append(summary)
+        result = await self._session.scalars(stmt)
+        summaries = [
+            domains.OrderSummary(
+                id=order_orm.id,
+                status=order_orm.status,
+                formation_date=order_orm.formation_date,
+                risk_score=order_orm.risk_score,
+                creator_login=order_orm.creator.login
+            )
+            for order_orm in result.all()
+        ]
         return summaries
 
     async def get_full_order_details(self, order_id: int) -> Optional[domains.OrderDetails]:
@@ -171,6 +179,7 @@ class SqlAlchemyDatabaseRepo(AbstractDatabaseRepo):
             id=order_orm.id,
             status=order_orm.status,
             created_at=order_orm.created_at,
+            created_by=order_orm.created_by,
             creator_login=order_orm.creator.login,
             moderator_login=order_orm.moderator.login if order_orm.moderator else None,
             formation_date=order_orm.formation_date,

@@ -6,8 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from app.core.middlewares import init_middlewares
 # from app.views import router
 from app.api import auth, orders, services
-from app.core.database import sessionmanager
-from app.models import Base
+from app.core.database import get_session_manager
 
 
 def add_routes(app: FastAPI):
@@ -24,10 +23,7 @@ async def lifespan(app: FastAPI):
     """
     print("INFO:     Application startup...")
     
-    async with sessionmanager._engine.begin() as conn:
-        print("INFO:     Creating database tables...")
-        await conn.run_sync(Base.metadata.create_all)
-        print("INFO:     Database tables created.")
+    sessionmanager = get_session_manager()
 
     yield
 

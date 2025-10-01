@@ -44,4 +44,5 @@ async def update_service_image(db_repo: AbstractDatabaseRepo, file_storage: Abst
     unique_filename = f"{uuid.uuid4()}.{file_extension}"
     image_url = file_storage.save(image.file, unique_filename, image.content_type)
     
-    return await db_repo.update_service(service_id, domains.ServiceUpdate(image_url=image_url))
+    update_data = domains.ServiceUpdatePartial(image_url=image_url)
+    return await db_repo.update_service(service_id, update_data)

@@ -6,7 +6,7 @@ from app.auth.dependencies import ModeratorDep, CurrentUserDep
 from app.core.database import DBSessionDep
 from app.file_storage.minio_storage import FileStorageDep
 from app.repository import SqlAlchemyDatabaseRepo
-from app import domains, use_cases
+from app import domains, interfaces, use_cases
 
 router = APIRouter(prefix="/services", tags=["Services"])
 
@@ -60,7 +60,7 @@ async def delete_service(service_id: int, db: DBSessionDep, storage: FileStorage
     try:
         await use_cases.service.delete_service(repo, storage, service_id)
         await db.commit()
-    except use_cases.ServiceNotFoundError as e:
+    except interfaces.ServiceNotFoundError as e:
         await db.rollback()
         raise HTTPException(status_code=404, detail=str(e))
     return None
@@ -74,9 +74,10 @@ async def upload_image(service_id: int, db: DBSessionDep, storage: FileStorageDe
         updated_service_orm = await use_cases.service.update_service_image(repo, storage, service_id, image)
         await db.commit()
         return domains.Service.model_validate(updated_service_orm)
-    except use_cases.ServiceNotFoundError as e:
+    except interfaces.ServiceNotFoundError as e:
         await db.rollback()
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         await db.rollback()
-        raise HTTPException(status_code=500, detail=f"File upload failed: {e}")
+        print(f"File upload failed: {e}")
+        raise HTTPException(status_code=500, detail="File upload failed.")

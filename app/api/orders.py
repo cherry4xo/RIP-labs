@@ -4,11 +4,12 @@ from datetime import date
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from app import domains
+from app import interfaces
 from app.use_cases import order as order_use_cases
 from app.auth.dependencies import CurrentUserDep, ModeratorDep
 from app.core.database import DBSessionDep
 from app.repository import SqlAlchemyDatabaseRepo
-from app.interfaces import OrderNotFoundError
+from app.interfaces import OrderNotFoundError, ServiceNotFoundError
 
 router = APIRouter(tags=["Orders & Cart"])
 
@@ -19,47 +20,48 @@ async def get_cart_info(user: CurrentUserDep, db: DBSessionDep):
     draft_order = await repo.get_draft_order_by_user_id(user.id)
     if not draft_order:
         return domains.CartInfo(order_id=-1, item_count=0)
-    count = await repo.get_cart_item_count(user.id)
+    count = len(draft_order.services)
     return domains.CartInfo(order_id=draft_order.id, item_count=count)
 
 @router.post("/cart/services", response_model=domains.OrderDetails)
 async def add_to_cart(item: domains.CartItemAdd, user: CurrentUserDep, db: DBSessionDep):
     """Добавление услуги в корзину (создает корзину, если ее нет)."""
     repo = SqlAlchemyDatabaseRepo(db)
-    await order_use_cases.add_service_to_cart(repo, user.id, item.service_id)
-    await db.commit()
-    draft_order = await repo.get_draft_order_by_user_id(user.id)
-    return await repo.get_full_order_details(draft_order.id)
+    try:
+        updated_cart = await order_use_cases.add_service_to_cart(repo, user.id, item.service_id)
+        await db.commit()
+        return updated_cart
+    except ServiceNotFoundError as e:
+        await db.rollback()
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 @router.delete("/cart/services/{service_id}", response_model=domains.OrderDetails)
 async def remove_from_cart(service_id: int, user: CurrentUserDep, db: DBSessionDep):
     """Удаление услуги из корзины."""
     repo = SqlAlchemyDatabaseRepo(db)
-    draft_order = await repo.get_draft_order_by_user_id(user.id)
-    if not draft_order:
-        raise HTTPException(status_code=404, detail="Cart not found")
-    
-    deleted = await repo.delete_service_from_order(draft_order.id, service_id)
-    if not deleted:
-        raise HTTPException(status_code=404, detail="Service not found in cart")
-    
-    await db.commit()
-    return await repo.get_full_order_details(draft_order.id)
+    try:
+        updated_cart = await order_use_cases.remove_service_from_cart(repo, user.id, service_id)
+        await db.commit()
+        return updated_cart
+    except (OrderNotFoundError, ServiceNotFoundError) as e:
+        await db.rollback()
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 @router.put("/cart/services/{service_id}", response_model=domains.OrderDetails)
 async def update_cart_item(service_id: int, item_data: domains.CartItemUpdate, user: CurrentUserDep, db: DBSessionDep):
     """Изменение полей м-м (уровня защиты, комментария) для услуги в корзине."""
     repo = SqlAlchemyDatabaseRepo(db)
-    draft_order = await repo.get_draft_order_by_user_id(user.id)
-    if not draft_order:
-        raise HTTPException(status_code=404, detail="Cart not found")
-        
-    await repo.update_association(draft_order.id, service_id, **item_data.model_dump())
-    await db.commit()
-    return await repo.get_full_order_details(draft_order.id)
+    try:
+        updated_cart = await order_use_cases.update_cart_item_details(repo, user.id, service_id, item_data)
+        await db.commit()
+        return updated_cart
+    except OrderNotFoundError as e:
+        await db.rollback()
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 @router.get("/orders", response_model=List[domains.OrderSummary])
 async def get_orders(
+    user: CurrentUserDep,
     db: DBSessionDep,
     status: Optional[domains.OrderStatus] = None,
     date_from: Optional[date] = None,
@@ -67,7 +69,7 @@ async def get_orders(
 ):
     """Получение списка оформленных заявок с фильтрацией."""
     repo = SqlAlchemyDatabaseRepo(db)
-    return await repo.get_orders_with_filters(status, date_from, date_to)
+    return await repo.get_orders_with_filters(user.id, status, date_from, date_to)
 
 @router.get("/orders/{order_id}", response_model=domains.OrderDetails)
 async def get_order(order_id: int, user: CurrentUserDep, db: DBSessionDep):

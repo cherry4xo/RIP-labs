@@ -1,5 +1,5 @@
 import contextlib
-from typing import Annotated, Any, AsyncIterator
+from typing import Annotated, Any, AsyncIterator, Optional
 
 from fastapi import Depends
 from sqlalchemy.ext.asyncio import (
@@ -57,12 +57,19 @@ class DatabaseSessionManager:
             await session.close()
 
 
-sessionmanager = DatabaseSessionManager(settings.DB_URL, {"echo": settings.ECHO_SQL})
+_sessionmanager: Optional[DatabaseSessionManager] = None
+
+def get_session_manager() -> DatabaseSessionManager:
+    """Возвращает синглтон sessionmanager, создавая его при первом вызове."""
+    global _sessionmanager
+    if _sessionmanager is None:
+        _sessionmanager = DatabaseSessionManager(settings.DB_URL, {"echo": settings.ECHO_SQL})
+    return _sessionmanager
 
 
 async def get_db_session():
+    sessionmanager = get_session_manager()
     async with sessionmanager.session() as session:
         yield session
-
 
 DBSessionDep = Annotated[AsyncSession, Depends(get_db_session)]

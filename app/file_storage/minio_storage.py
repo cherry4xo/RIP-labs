@@ -1,6 +1,6 @@
 import json
 import os
-from typing import IO, Annotated
+from typing import IO, Annotated, Optional
 from fastapi import Depends
 from minio import Minio
 from minio.error import S3Error
@@ -43,15 +43,17 @@ class MinioFileStorage(AbstractFileStorage):
             raise
 
     def save(self, file: IO, filename: str, content_type: str) -> str:
-        file.seek(0, os.SEEK_END)
-        file_size = file.tell()
-        file.seek(0)
+        file_content = file.read()
+        file_size = len(file_content)
+
+        from io import BytesIO
+        file_like_object = BytesIO(file_content)
 
         try:
             self.client.put_object(
                 self.bucket_name,
                 filename,
-                file,
+                file_like_object,
                 length=file_size,
                 content_type=content_type
             )
@@ -61,15 +63,24 @@ class MinioFileStorage(AbstractFileStorage):
             raise
 
     def delete(self, file_url: str) -> None:
-        filename = file_url.split("/", -1)
+        filename = file_url.split('/')[-1]
         try:
             self.client.remove_object(self.bucket_name, filename)
         except S3Error as e:
             print(f"Error deleting from MinIO: {e}")
 
 
+_storage_instance: Optional[MinioFileStorage] = None
+
 def get_file_storage() -> AbstractFileStorage:
-    return MinioFileStorage
+    """
+    Возвращает синглтон-экземпляр файлового хранилища,
+    создавая его при первом вызове.
+    """
+    global _storage_instance
+    if _storage_instance is None:
+        _storage_instance = MinioFileStorage()
+    return _storage_instance
 
 
 FileStorageDep = Annotated[AbstractFileStorage, Depends(get_file_storage)]
