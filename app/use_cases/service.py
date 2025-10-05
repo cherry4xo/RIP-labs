@@ -4,82 +4,82 @@ import uuid
 from fastapi import UploadFile
 
 from app import domains
-from app.interfaces import AbstractDatabaseRepo, AbstractFileStorage, ServiceNotFoundError
+from app.interfaces import AbstractDatabaseRepo, AbstractFileStorage, VulnerabilityAssessmentNotFoundError
 
 
-async def get_services_list(
+async def get_vulnerability_assessments_list(
     repo: AbstractDatabaseRepo,
     title: Optional[str] = None,
     assessment_type: Optional[str] = None
-) -> List[domains.Service]:
-    """Get list of services with optional filtering."""
-    return await repo.get_services_with_filters(title, assessment_type)
+) -> List[domains.VulnerabilityAssessment]:
+    """Get list of vulnerability assessments with optional filtering."""
+    return await repo.get_vulnerability_assessments_with_filters(title, assessment_type)
 
 
-async def get_service_details(
+async def get_vulnerability_assessment_details(
     repo: AbstractDatabaseRepo,
-    service_id: int
-) -> domains.Service:
-    """Get details of a specific service."""
-    service = await repo.get_service_by_id(service_id)
-    if not service:
-        raise ServiceNotFoundError("Service not found")
-    return service
+    assessment_id: int
+) -> domains.VulnerabilityAssessment:
+    """Get details of a specific vulnerability assessment."""
+    assessment = await repo.get_vulnerability_assessment_by_id(assessment_id)
+    if not assessment:
+        raise VulnerabilityAssessmentNotFoundError("Vulnerability assessment not found")
+    return assessment
 
 
-async def create_new_service(
+async def create_new_vulnerability_assessment(
     repo: AbstractDatabaseRepo,
-    service_data: domains.ServiceCreate
-) -> domains.Service:
-    """Create a new service."""
-    return await repo.create_service(service_data)
+    assessment_data: domains.VulnerabilityAssessmentCreate
+) -> domains.VulnerabilityAssessment:
+    """Create a new vulnerability assessment."""
+    return await repo.create_vulnerability_assessment(assessment_data)
 
 
-async def update_existing_service(
+async def update_existing_vulnerability_assessment(
     repo: AbstractDatabaseRepo,
-    service_id: int,
-    service_data: domains.ServiceUpdate
-) -> domains.Service:
-    """Update an existing service."""
-    updated_service = await repo.update_service(service_id, service_data)
-    if not updated_service:
-        raise ServiceNotFoundError("Service not found")
-    return updated_service
+    assessment_id: int,
+    assessment_data: domains.VulnerabilityAssessmentUpdate
+) -> domains.VulnerabilityAssessment:
+    """Update an existing vulnerability assessment."""
+    updated_assessment = await repo.update_vulnerability_assessment(assessment_id, assessment_data)
+    if not updated_assessment:
+        raise VulnerabilityAssessmentNotFoundError("Vulnerability assessment not found")
+    return updated_assessment
 
 
-async def delete_service(
+async def delete_vulnerability_assessment(
     db_repo: AbstractDatabaseRepo, 
     file_storage: AbstractFileStorage, 
-    service_id: int
+    assessment_id: int
 ):
-    """Delete a service and its associated image."""
-    service = await db_repo.get_service_by_id(service_id)
-    if not service:
-        raise ServiceNotFoundError("Service not found")
+    """Delete a vulnerability assessment and its associated image."""
+    assessment = await db_repo.get_vulnerability_assessment_by_id(assessment_id)
+    if not assessment:
+        raise VulnerabilityAssessmentNotFoundError("Vulnerability assessment not found")
     
-    if service.image_url:
-        file_storage.delete(service.image_url)
+    if assessment.image_url:
+        file_storage.delete(assessment.image_url)
         
-    await db_repo.delete_service(service_id)
+    await db_repo.delete_vulnerability_assessment(assessment_id)
 
 
-async def update_service_image(
+async def update_vulnerability_assessment_image(
     db_repo: AbstractDatabaseRepo, 
     file_storage: AbstractFileStorage, 
-    service_id: int, 
+    assessment_id: int, 
     image: UploadFile
 ):
-    """Update the image for a service."""
-    service = await db_repo.get_service_by_id(service_id)
-    if not service:
-        raise ServiceNotFoundError("Service not found")
+    """Update the image for a vulnerability assessment."""
+    assessment = await db_repo.get_vulnerability_assessment_by_id(assessment_id)
+    if not assessment:
+        raise VulnerabilityAssessmentNotFoundError("Vulnerability assessment not found")
 
-    if service.image_url:
-        file_storage.delete(service.image_url)
+    if assessment.image_url:
+        file_storage.delete(assessment.image_url)
 
     file_extension = image.filename.split('.')[-1]
     unique_filename = f"{uuid.uuid4()}.{file_extension}"
     image_url = file_storage.save(image.file, unique_filename, image.content_type)
     
-    update_data = domains.ServiceUpdatePartial(image_url=image_url)
-    return await db_repo.update_service(service_id, update_data)
+    update_data = domains.VulnerabilityAssessmentUpdatePartial(image_url=image_url)
+    return await db_repo.update_vulnerability_assessment(assessment_id, update_data)

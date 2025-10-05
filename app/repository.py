@@ -41,172 +41,172 @@ class SqlAlchemyDatabaseRepo(AbstractDatabaseRepo):
         await self._session.flush()
         return domains.UserRead.model_validate(user_orm)
 
-    # --- Service Methods ---
-    async def get_service_by_id(self, service_id: int) -> Optional[domains.Service]:
-        service_orm = await self._session.get(models.Service, service_id)
-        return domains.Service.model_validate(service_orm) if service_orm else None
+    # --- Vulnerability Assessment Methods ---
+    async def get_vulnerability_assessment_by_id(self, assessment_id: int) -> Optional[domains.VulnerabilityAssessment]:
+        assessment_orm = await self._session.get(models.VulnerabilityAssessment, assessment_id)
+        return domains.VulnerabilityAssessment.model_validate(assessment_orm) if assessment_orm else None
 
-    async def get_services_with_filters(self, title: Optional[str], assessment_type: Optional[str]) -> List[domains.Service]:
-        stmt = select(models.Service).where(models.Service.status != models.ServiceStatus.DELETED).order_by(models.Service.title)
+    async def get_vulnerability_assessments_with_filters(self, title: Optional[str], assessment_type: Optional[str]) -> List[domains.VulnerabilityAssessment]:
+        stmt = select(models.VulnerabilityAssessment).where(models.VulnerabilityAssessment.status != models.AssessmentStatus.DELETED).order_by(models.VulnerabilityAssessment.title)
         if title:
-            stmt = stmt.where(models.Service.title.ilike(f"%{title}%"))
+            stmt = stmt.where(models.VulnerabilityAssessment.title.ilike(f"%{title}%"))
         if assessment_type:
-            stmt = stmt.where(models.Service.assessment_type == assessment_type)
+            stmt = stmt.where(models.VulnerabilityAssessment.assessment_type == assessment_type)
         result = await self._session.scalars(stmt)
-        return [domains.Service.model_validate(s) for s in result.all()]
+        return [domains.VulnerabilityAssessment.model_validate(s) for s in result.all()]
 
-    async def create_service(self, service_data: domains.ServiceCreate) -> domains.Service:
-        new_service_orm = models.Service(**service_data.model_dump())
-        self._session.add(new_service_orm)
+    async def create_vulnerability_assessment(self, assessment_data: domains.VulnerabilityAssessmentCreate) -> domains.VulnerabilityAssessment:
+        new_assessment_orm = models.VulnerabilityAssessment(**assessment_data.model_dump())
+        self._session.add(new_assessment_orm)
         await self._session.flush()
-        return domains.Service.model_validate(new_service_orm)
+        return domains.VulnerabilityAssessment.model_validate(new_assessment_orm)
 
-    async def update_service(self, service_id: int, service_data: domains.ServiceUpdatePartial, image_url: Optional[str] = None) -> Optional[domains.Service]:
-        service_orm = await self._session.get(models.Service, service_id)
-        if not service_orm:
+    async def update_vulnerability_assessment(self, assessment_id: int, assessment_data: domains.VulnerabilityAssessmentUpdatePartial, image_url: Optional[str] = None) -> Optional[domains.VulnerabilityAssessment]:
+        assessment_orm = await self._session.get(models.VulnerabilityAssessment, assessment_id)
+        if not assessment_orm:
             return None
         
-        for key, value in service_data.model_dump(exclude_unset=True).items():
-            setattr(service_orm, key, value)
+        for key, value in assessment_data.model_dump(exclude_unset=True).items():
+            setattr(assessment_orm, key, value)
         
         if image_url is not None:
-            service_orm.image_url = image_url
+            assessment_orm.image_url = image_url
 
         await self._session.flush()
-        return domains.Service.model_validate(service_orm)
+        return domains.VulnerabilityAssessment.model_validate(assessment_orm)
 
-    async def delete_service(self, service_id: int) -> bool:
-        service_orm = await self._session.get(models.Service, service_id)
-        if not service_orm:
+    async def delete_vulnerability_assessment(self, assessment_id: int) -> bool:
+        assessment_orm = await self._session.get(models.VulnerabilityAssessment, assessment_id)
+        if not assessment_orm:
             return False
-        await self._session.delete(service_orm)
+        await self._session.delete(assessment_orm)
         await self._session.flush()
         return True
 
-    # --- Order & Cart Methods ---
-    async def get_draft_order_by_user_id(self, user_id: int) -> Optional[domains.OrderDetails]:
-        stmt = select(models.Order).where(
-            models.Order.created_by == user_id,
-            models.Order.status == models.OrderStatus.DRAFT
+    # --- Assessment Report & Basket Methods ---
+    async def get_draft_report_by_user_id(self, user_id: int) -> Optional[domains.AssessmentReportDetails]:
+        stmt = select(models.AssessmentReport).where(
+            models.AssessmentReport.created_by == user_id,
+            models.AssessmentReport.status == models.ReportStatus.DRAFT
         )
-        order_orm = await self._session.scalar(stmt)
-        if not order_orm:
+        report_orm = await self._session.scalar(stmt)
+        if not report_orm:
             return None
-        return await self.get_full_order_details(order_orm.id)
+        return await self.get_full_report_details(report_orm.id)
 
-    async def create_draft_order(self, user_id: int) -> domains.OrderDetails:
-        new_order = models.Order(created_by=user_id, created_at=datetime.now())
-        self._session.add(new_order)
+    async def create_draft_report(self, user_id: int) -> domains.AssessmentReportDetails:
+        new_report = models.AssessmentReport(created_by=user_id, created_at=datetime.now())
+        self._session.add(new_report)
         await self._session.flush()
-        return await self.get_full_order_details(new_order.id)
+        return await self.get_full_report_details(new_report.id)
 
-    async def add_service_to_order(self, order_id: int, service_id: int, price: Decimal) -> None:
-        new_assoc = models.OrdersServices(
-            order_id=order_id, service_id=service_id, price_at_order_time=price
+    async def add_assessment_to_report(self, report_id: int, assessment_id: int, price: Decimal) -> None:
+        new_assoc = models.AssessmentComponents(
+            order_id=report_id, service_id=assessment_id, price_at_order_time=price
         )
         self._session.add(new_assoc)
         await self._session.flush()
 
-    async def get_association(self, order_id: int, service_id: int) -> Optional[models.OrdersServices]:
-        stmt = select(models.OrdersServices).where(
-            models.OrdersServices.order_id == order_id,
-            models.OrdersServices.service_id == service_id
+    async def get_component(self, report_id: int, assessment_id: int) -> Optional[models.AssessmentComponents]:
+        stmt = select(models.AssessmentComponents).where(
+            models.AssessmentComponents.order_id == report_id,
+            models.AssessmentComponents.service_id == assessment_id
         )
         return await self._session.scalar(stmt)
     
-    async def delete_service_from_order(self, order_id: int, service_id: int) -> bool:
-        stmt = delete(models.OrdersServices).where(
-            models.OrdersServices.order_id == order_id,
-            models.OrdersServices.service_id == service_id
+    async def delete_assessment_from_report(self, report_id: int, assessment_id: int) -> bool:
+        stmt = delete(models.AssessmentComponents).where(
+            models.AssessmentComponents.order_id == report_id,
+            models.AssessmentComponents.service_id == assessment_id
         )
         result = await self._session.execute(stmt)
         return result.rowcount > 0
 
-    async def get_orders_with_filters(self, user_id: int, status: Optional[str], date_from: Optional[date], date_to: Optional[date]) -> List[domains.OrderSummary]:
+    async def get_reports_with_filters(self, user_id: int, status: Optional[str], date_from: Optional[date], date_to: Optional[date]) -> List[domains.AssessmentReportSummary]:
         stmt = (
-            select(models.Order)
+            select(models.AssessmentReport)
             .where(
-                models.Order.created_by == user_id,
-                models.Order.status.notin_([models.OrderStatus.DRAFT, models.OrderStatus.DELETED])
+                models.AssessmentReport.created_by == user_id,
+                models.AssessmentReport.status.notin_([models.ReportStatus.DRAFT, models.ReportStatus.DELETED])
             )
-            .options(selectinload(models.Order.creator))
-            .order_by(models.Order.created_at.desc())
+            .options(selectinload(models.AssessmentReport.creator))
+            .order_by(models.AssessmentReport.created_at.desc())
         )
         if status:
-            stmt = stmt.where(models.Order.status == status)
+            stmt = stmt.where(models.AssessmentReport.status == status)
         if date_from:
-            stmt = stmt.where(models.Order.formation_date >= date_from)
+            stmt = stmt.where(models.AssessmentReport.formation_date >= date_from)
         if date_to:
-            stmt = stmt.where(models.Order.formation_date <= date_to)
+            stmt = stmt.where(models.AssessmentReport.formation_date <= date_to)
         
         result = await self._session.scalars(stmt)
         summaries = [
-            domains.OrderSummary(
-                id=order_orm.id,
-                status=order_orm.status,
-                formation_date=order_orm.formation_date,
-                risk_score=order_orm.risk_score,
-                creator_login=order_orm.creator.login
+            domains.AssessmentReportSummary(
+                id=report_orm.id,
+                status=report_orm.status,
+                formation_date=report_orm.formation_date,
+                risk_score=report_orm.risk_score,
+                creator_login=report_orm.creator.login
             )
-            for order_orm in result.all()
+            for report_orm in result.all()
         ]
         return summaries
 
-    async def get_full_order_details(self, order_id: int) -> Optional[domains.OrderDetails]:
+    async def get_full_report_details(self, report_id: int) -> Optional[domains.AssessmentReportDetails]:
         stmt = (
-            select(models.Order)
-            .where(models.Order.id == order_id)
+            select(models.AssessmentReport)
+            .where(models.AssessmentReport.id == report_id)
             .options(
-                selectinload(models.Order.service_associations).selectinload(models.OrdersServices.service),
-                selectinload(models.Order.creator),
-                selectinload(models.Order.moderator)
+                selectinload(models.AssessmentReport.component_associations).selectinload(models.AssessmentComponents.vulnerability_assessment),
+                selectinload(models.AssessmentReport.creator),
+                selectinload(models.AssessmentReport.moderator)
             )
         )
-        order_orm = await self._session.scalar(stmt)
-        if not order_orm or order_orm.status == models.OrderStatus.DELETED:
+        report_orm = await self._session.scalar(stmt)
+        if not report_orm or report_orm.status == models.ReportStatus.DELETED:
             return None
         
-        services_in_order = [
-            domains.ServiceInOrder(
-                service=domains.Service.model_validate(assoc.service),
+        components_in_report = [
+            domains.AssessmentComponent(
+                vulnerability_assessment=domains.VulnerabilityAssessment.model_validate(assoc.vulnerability_assessment),
                 protection_level=assoc.protection_level,
                 comment=assoc.comment,
                 price_at_order_time=assoc.price_at_order_time
-            ) for assoc in order_orm.service_associations
+            ) for assoc in report_orm.component_associations
         ]
 
-        details = domains.OrderDetails(
-            id=order_orm.id,
-            status=order_orm.status,
-            created_at=order_orm.created_at,
-            created_by=order_orm.created_by,
-            creator_login=order_orm.creator.login,
-            moderator_login=order_orm.moderator.login if order_orm.moderator else None,
-            formation_date=order_orm.formation_date,
-            completion_date=order_orm.completion_date,
-            target_system_info=order_orm.target_system_info,
-            risk_score=order_orm.risk_score,
-            services=services_in_order
+        details = domains.AssessmentReportDetails(
+            id=report_orm.id,
+            status=report_orm.status,
+            created_at=report_orm.created_at,
+            created_by=report_orm.created_by,
+            creator_login=report_orm.creator.login,
+            moderator_login=report_orm.moderator.login if report_orm.moderator else None,
+            formation_date=report_orm.formation_date,
+            completion_date=report_orm.completion_date,
+            target_system_info=report_orm.target_system_info,
+            risk_score=report_orm.risk_score,
+            components=components_in_report
         )
         return details
 
-    async def update_order(self, order_id: int, **kwargs) -> None:
-        stmt = update(models.Order).where(models.Order.id == order_id).values(**kwargs)
+    async def update_report(self, report_id: int, **kwargs) -> None:
+        stmt = update(models.AssessmentReport).where(models.AssessmentReport.id == report_id).values(**kwargs)
         await self._session.execute(stmt)
         
-    async def update_association(self, order_id: int, service_id: int, **kwargs) -> None:
+    async def update_component(self, report_id: int, assessment_id: int, **kwargs) -> None:
         stmt = (
-            update(models.OrdersServices)
-            .where(models.OrdersServices.order_id == order_id, models.OrdersServices.service_id == service_id)
+            update(models.AssessmentComponents)
+            .where(models.AssessmentComponents.order_id == report_id, models.AssessmentComponents.service_id == assessment_id)
             .values(**kwargs)
         )
         await self._session.execute(stmt)
 
-    async def get_cart_item_count(self, user_id: int) -> int:
-        draft_order = await self.get_draft_order_by_user_id(user_id)
-        if not draft_order:
+    async def get_basket_item_count(self, user_id: int) -> int:
+        draft_report = await self.get_draft_report_by_user_id(user_id)
+        if not draft_report:
             return 0
-        stmt = select(func.count()).select_from(models.OrdersServices).where(
-            models.OrdersServices.order_id == draft_order.id
+        stmt = select(func.count()).select_from(models.AssessmentComponents).where(
+            models.AssessmentComponents.order_id == draft_report.id
         )
         return await self._session.scalar(stmt) or 0

@@ -10,64 +10,64 @@ def setup_for_orders(client: TestClient, test_moderator_token_headers):
 
 
 def test_cart_flow(client: TestClient, test_user_token_headers):
-    response = client.get("/cart/info", headers=test_user_token_headers)
+    response = client.get("/basket/info", headers=test_user_token_headers)
     assert response.status_code == 200
-    assert response.json() == {"order_id": -1, "item_count": 0}
+    assert response.json() == {"report_id": -1, "item_count": 0}
 
-    response = client.post("/cart/services", json={"service_id": 1}, headers=test_user_token_headers)
+    response = client.post("/basket/assessments", json={"assessment_id": 1}, headers=test_user_token_headers)
     assert response.status_code == 200
     cart = response.json()
     order_id = cart["id"]
-    assert len(cart["services"]) == 1
+    assert len(cart["components"]) == 1
 
-    response = client.get("/cart/info", headers=test_user_token_headers)
+    response = client.get("/basket/info", headers=test_user_token_headers)
     assert response.status_code == 200
-    assert response.json() == {"order_id": order_id, "item_count": 1}
+    assert response.json() == {"report_id": order_id, "item_count": 1}
 
-    client.post("/cart/services", json={"service_id": 2}, headers=test_user_token_headers)
+    client.post("/basket/assessments", json={"assessment_id": 2}, headers=test_user_token_headers)
     
     update_data = {"protection_level": "full", "comment": "Updated comment"}
-    response = client.put(f"/cart/services/1", json=update_data, headers=test_user_token_headers)
+    response = client.put(f"/basket/assessments/1", json=update_data, headers=test_user_token_headers)
     assert response.status_code == 200
     updated_cart = response.json()
-    service1_in_cart = next(item for item in updated_cart["services"] if item["service"]["id"] == 1)
+    service1_in_cart = next(item for item in updated_cart["components"] if item["vulnerability_assessment"]["id"] == 1)
     assert service1_in_cart["protection_level"] == "full"
     assert service1_in_cart["comment"] == "Updated comment"
 
-    response = client.delete(f"/cart/services/2", headers=test_user_token_headers)
+    response = client.delete(f"/basket/assessments/2", headers=test_user_token_headers)
     assert response.status_code == 200
-    assert len(response.json()["services"]) == 1
+    assert len(response.json()["components"]) == 1
 
 
 def test_full_order_lifecycle(client: TestClient, test_user_token_headers, test_moderator_token_headers):
-    client.post("/cart/services", json={"service_id": 1}, headers=test_user_token_headers)
-    response = client.post("/cart/services", json={"service_id": 2}, headers=test_user_token_headers)
+    client.post("/basket/assessments", json={"assessment_id": 1}, headers=test_user_token_headers)
+    response = client.post("/basket/assessments", json={"assessment_id": 2}, headers=test_user_token_headers)
     order_id = response.json()["id"]
 
     form_payload = {
         "target_system_info": "e2e-test.com",
-        "services": [
-            {"service_id": 1, "protection_level": "basic", "comment": "check this"},
-            {"service_id": 2, "protection_level": "none", "comment": None},
+        "components": [
+            {"assessment_id": 1, "protection_level": "basic", "comment": "check this"},
+            {"assessment_id": 2, "protection_level": "none", "comment": None},
         ]
     }
-    response = client.put(f"/orders/{order_id}/form", json=form_payload, headers=test_user_token_headers)
+    response = client.put(f"/reports/{order_id}/form", json=form_payload, headers=test_user_token_headers)
     assert response.status_code == 200
     formed_order = response.json()
     assert formed_order["status"] == "formed"
     assert formed_order["target_system_info"] == "e2e-test.com"
 
-    response = client.put(f"/orders/{order_id}/complete", headers=test_user_token_headers)
+    response = client.put(f"/reports/{order_id}/complete", headers=test_user_token_headers)
     assert response.status_code == 403
 
-    response = client.put(f"/orders/{order_id}/complete", headers=test_moderator_token_headers)
+    response = client.put(f"/reports/{order_id}/complete", headers=test_moderator_token_headers)
     assert response.status_code == 200
     completed_order = response.json()
     assert completed_order["status"] == "completed"
     assert completed_order["moderator_login"] == "moduser"
     assert completed_order["risk_score"] == 6
 
-    response = client.get("/orders", headers=test_user_token_headers)
+    response = client.get("/reports", headers=test_user_token_headers)
     assert response.status_code == 200
     assert len(response.json()) >= 1
     assert response.json()[0]["status"] == "completed"

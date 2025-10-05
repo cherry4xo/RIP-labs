@@ -16,7 +16,7 @@ from sqlalchemy import (Boolean,
                         JSON
 )
 
-from app.domains import ProtectionLevel, ServiceAssessmentType, ServiceStatus, OrderStatus
+from app.domains import ProtectionLevel, VulnerabilityAssessmentType, AssessmentStatus, ReportStatus
 
 
 class Base:
@@ -33,22 +33,22 @@ class Base:
 Base = declarative_base(cls=Base)
 
 
-class Service(Base):
-    __tablename__ = "services"
+class VulnerabilityAssessment(Base):
+    __tablename__ = "vulnerability_assessments"
 
     id = Column("id", Integer, primary_key=True)
     title = Column("title", String(128))
     short_description = Column("short_description", String)
     description = Column("description", String)
-    status = Column("status", Enum(ServiceStatus, values_callable=lambda e: [x.value for x in e]), default=ServiceStatus.AVAILABLE)
+    status = Column("status", Enum(AssessmentStatus, values_callable=lambda e: [x.value for x in e]), default=AssessmentStatus.AVAILABLE)
     image_url = Column("image_url", String(256), nullable=True)
     price = Column("price", Numeric(10, 2), nullable=False)
     
     impact_level = Column(Integer, nullable=False, server_default='1')
 
-    assessment_type = Column("assessment_type", Enum(ServiceAssessmentType), nullable=False)
+    assessment_type = Column("assessment_type", Enum(VulnerabilityAssessmentType), nullable=False)
 
-    order_associations = relationship("OrdersServices", back_populates="service")
+    report_associations = relationship("AssessmentComponents", back_populates="vulnerability_assessment")
 
 
 class User(Base):
@@ -60,24 +60,24 @@ class User(Base):
     is_moderator = Column("is_moderator", Boolean, default=False)
     is_deleted = Column("is_deleted", Boolean, default=False)
 
-    created_orders = relationship(
-        "Order",
+    created_reports = relationship(
+        "AssessmentReport",
         back_populates="creator",
-        foreign_keys="Order.created_by"
+        foreign_keys="AssessmentReport.created_by"
     )
 
-    moderated_orders = relationship(
-        "Order",
+    moderated_reports = relationship(
+        "AssessmentReport",
         back_populates="moderator",
-        foreign_keys="Order.moderated_by"
+        foreign_keys="AssessmentReport.moderated_by"
     )
 
 
-class Order(Base):
-    __tablename__ = "orders"
+class AssessmentReport(Base):
+    __tablename__ = "assessment_reports"
 
     id = Column("id", Integer, primary_key=True)
-    status = Column("status", Enum(OrderStatus, values_callable=lambda e: [x.value for x in e]), default=OrderStatus.DRAFT)
+    status = Column("status", Enum(ReportStatus, values_callable=lambda e: [x.value for x in e]), default=ReportStatus.DRAFT)
     created_at = Column("created_at", DateTime, nullable=False)
     created_by = Column("created_by", Integer, ForeignKey("users.id"))
 
@@ -92,21 +92,21 @@ class Order(Base):
 
     creator = relationship(
         "User",
-        back_populates="created_orders",
+        back_populates="created_reports",
         foreign_keys=[created_by]
     )
 
     moderator = relationship(
         "User",
-        back_populates="moderated_orders",
+        back_populates="moderated_reports",
         foreign_keys=[moderated_by]
     )
 
-    service_associations = relationship("OrdersServices", back_populates="order")
+    component_associations = relationship("AssessmentComponents", back_populates="report")
 
     __table_args__ = (
         Index(
-            'uq_user_draft_order',
+            'uq_user_draft_report',
             'created_by', 'status',
             unique=True,
             postgresql_where=(status == 'draft')
@@ -114,16 +114,16 @@ class Order(Base):
     )
 
 
-class OrdersServices(Base):
-    __tablename__ = "orders_services"
+class AssessmentComponents(Base):
+    __tablename__ = "assessment_components"
 
-    service_id = Column("service_id", ForeignKey("services.id"), primary_key=True)
-    order_id = Column("order_id", ForeignKey("orders.id"), primary_key=True)
+    service_id = Column("service_id", ForeignKey("vulnerability_assessments.id"), primary_key=True)
+    order_id = Column("order_id", ForeignKey("assessment_reports.id"), primary_key=True)
 
     price_at_order_time = Column(Numeric(10, 2), nullable=False)
 
     protection_level = Column("protection_level", Enum(ProtectionLevel, values_callable=lambda e: [x.value for x in e]), default=ProtectionLevel.NONE, nullable=False)
     comment = Column(Text, nullable=True)
 
-    order = relationship("Order", back_populates="service_associations")
-    service = relationship("Service", back_populates="order_associations")
+    report = relationship("AssessmentReport", back_populates="component_associations")
+    vulnerability_assessment = relationship("VulnerabilityAssessment", back_populates="report_associations")

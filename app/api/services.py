@@ -12,56 +12,56 @@ from app.use_cases import service as service_use_cases
 router = APIRouter(prefix="/services", tags=["Services"])
 
 
-@router.get("/", response_model=List[domains.Service])
-async def get_services(
+@router.get("/", response_model=List[domains.VulnerabilityAssessment])
+async def get_vulnerability_assessments(
     db: DBSessionDep,
     title: Optional[str] = None,
-    assessment_type: Optional[domains.ServiceAssessmentType] = None
+    assessment_type: Optional[domains.VulnerabilityAssessmentType] = None
 ):
-    """Получение списка услуг с возможностью фильтрации."""
+    """Получение списка оценок уязвимости с возможностью фильтрации."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
-        services = await service_use_cases.get_services_list(repo, title, assessment_type.value if assessment_type else None)
-        return services
+        assessments = await service_use_cases.get_vulnerability_assessments_list(repo, title, assessment_type.value if assessment_type else None)
+        return assessments
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/{service_id}", response_model=domains.Service)
-async def get_service(service_id: int, db: DBSessionDep):
-    """Получение детальной информации об одной услуге."""
+@router.get("/{assessment_id}", response_model=domains.VulnerabilityAssessment)
+async def get_vulnerability_assessment(assessment_id: int, db: DBSessionDep):
+    """Получение детальной информации об одной оценке уязвимости."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
-        service = await service_use_cases.get_service_details(repo, service_id)
-        return service
-    except interfaces.ServiceNotFoundError as e:
+        assessment = await service_use_cases.get_vulnerability_assessment_details(repo, assessment_id)
+        return assessment
+    except interfaces.VulnerabilityAssessmentNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/", response_model=domains.Service, status_code=201, dependencies=[ModeratorDep])
-async def create_service(service_data: domains.ServiceCreate, db: DBSessionDep):
-    """Создание новой услуги (только для модераторов)."""
+@router.post("/", response_model=domains.VulnerabilityAssessment, status_code=201, dependencies=[ModeratorDep])
+async def create_vulnerability_assessment(assessment_data: domains.VulnerabilityAssessmentCreate, db: DBSessionDep):
+    """Создание новой оценки уязвимости (только для модераторов)."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
-        new_service = await service_use_cases.create_new_service(repo, service_data)
+        new_assessment = await service_use_cases.create_new_vulnerability_assessment(repo, assessment_data)
         await db.commit()
-        return new_service
+        return new_assessment
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.put("/{service_id}", response_model=domains.Service, dependencies=[ModeratorDep])
-async def update_service(service_id: int, service_data: domains.ServiceUpdate, db: DBSessionDep):
-    """Обновление существующей услуги (только для модераторов)."""
+@router.put("/{assessment_id}", response_model=domains.VulnerabilityAssessment, dependencies=[ModeratorDep])
+async def update_vulnerability_assessment(assessment_id: int, assessment_data: domains.VulnerabilityAssessmentUpdate, db: DBSessionDep):
+    """Обновление существующей оценки уязвимости (только для модераторов)."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
-        updated_service = await service_use_cases.update_existing_service(repo, service_id, service_data)
+        updated_assessment = await service_use_cases.update_existing_vulnerability_assessment(repo, assessment_id, assessment_data)
         await db.commit()
-        return updated_service
-    except interfaces.ServiceNotFoundError as e:
+        return updated_assessment
+    except interfaces.VulnerabilityAssessmentNotFoundError as e:
         await db.rollback()
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
@@ -69,28 +69,28 @@ async def update_service(service_id: int, service_data: domains.ServiceUpdate, d
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.delete("/{service_id}", status_code=204, dependencies=[ModeratorDep])
-async def delete_service(service_id: int, db: DBSessionDep, storage: FileStorageDep):
-    """Удаление услуги и связанного с ней изображения (только для модераторов)."""
+@router.delete("/{assessment_id}", status_code=204, dependencies=[ModeratorDep])
+async def delete_vulnerability_assessment(assessment_id: int, db: DBSessionDep, storage: FileStorageDep):
+    """Удаление оценки уязвимости и связанного с ней изображения (только для модераторов)."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
-        await service_use_cases.delete_service(repo, storage, service_id)
+        await service_use_cases.delete_vulnerability_assessment(repo, storage, assessment_id)
         await db.commit()
-    except interfaces.ServiceNotFoundError as e:
+    except interfaces.VulnerabilityAssessmentNotFoundError as e:
         await db.rollback()
         raise HTTPException(status_code=404, detail=str(e))
     return None
 
 
-@router.post("/{service_id}/image", response_model=domains.Service, dependencies=[ModeratorDep])
-async def upload_image(service_id: int, db: DBSessionDep, storage: FileStorageDep, image: UploadFile = File(...)):
-    """Загрузка/обновление изображения для услуги (только для модераторов)."""
+@router.post("/{assessment_id}/image", response_model=domains.VulnerabilityAssessment, dependencies=[ModeratorDep])
+async def upload_image(assessment_id: int, db: DBSessionDep, storage: FileStorageDep, image: UploadFile = File(...)):
+    """Загрузка/обновление изображения для оценки уязвимости (только для модераторов)."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
-        updated_service_orm = await service_use_cases.update_service_image(repo, storage, service_id, image)
+        updated_assessment_orm = await service_use_cases.update_vulnerability_assessment_image(repo, storage, assessment_id, image)
         await db.commit()
-        return domains.Service.model_validate(updated_service_orm)
-    except interfaces.ServiceNotFoundError as e:
+        return domains.VulnerabilityAssessment.model_validate(updated_assessment_orm)
+    except interfaces.VulnerabilityAssessmentNotFoundError as e:
         await db.rollback()
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:

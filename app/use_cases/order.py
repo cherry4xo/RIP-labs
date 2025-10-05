@@ -3,167 +3,167 @@
 from datetime import datetime, timezone, date
 from typing import List, Optional
 
-from app.interfaces import AbstractDatabaseRepo, AbstractFileStorage, ServiceNotFoundError, OrderNotFoundError
+from app.interfaces import AbstractDatabaseRepo, AbstractFileStorage, VulnerabilityAssessmentNotFoundError, ReportNotFoundError
 from app import domains, models
 
 
-async def get_cart_info(repo: AbstractDatabaseRepo, user_id: int) -> domains.CartInfo:
+async def get_basket_info(repo: AbstractDatabaseRepo, user_id: int) -> domains.AssessmentBasketInfo:
     """
-    Get cart information for a user.
-    Returns CartInfo with order_id and item_count.
+    Get basket information for a user.
+    Returns AssessmentBasketInfo with report_id and item_count.
     """
-    draft_order = await repo.get_draft_order_by_user_id(user_id)
-    if not draft_order:
-        return domains.CartInfo(order_id=-1, item_count=0)
-    count = len(draft_order.services)
-    return domains.CartInfo(order_id=draft_order.id, item_count=count)
+    draft_report = await repo.get_draft_report_by_user_id(user_id)
+    if not draft_report:
+        return domains.AssessmentBasketInfo(report_id=-1, item_count=0)
+    count = len(draft_report.components)
+    return domains.AssessmentBasketInfo(report_id=draft_report.id, item_count=count)
 
 
-async def get_orders_list(
+async def get_reports_list(
     repo: AbstractDatabaseRepo,
     user_id: int,
     status: Optional[str] = None,
     date_from: Optional[date] = None,
     date_to: Optional[date] = None
-) -> List[domains.OrderSummary]:
+) -> List[domains.AssessmentReportSummary]:
     """
-    Get list of orders for a user with optional filtering.
+    Get list of reports for a user with optional filtering.
     """
-    return await repo.get_orders_with_filters(user_id, status, date_from, date_to)
+    return await repo.get_reports_with_filters(user_id, status, date_from, date_to)
 
 
-async def get_order_details(
+async def get_report_details(
     repo: AbstractDatabaseRepo,
-    order_id: int,
+    report_id: int,
     user_login: str,
     is_moderator: bool
-) -> domains.OrderDetails:
+) -> domains.AssessmentReportDetails:
     """
-    Get details of a specific order.
+    Get details of a specific report.
     Validates user access permissions.
     """
-    order = await repo.get_full_order_details(order_id)
-    if not order or (order.creator_login != user_login and not is_moderator):
-        raise OrderNotFoundError("Order not found")
-    return order
+    report = await repo.get_full_report_details(report_id)
+    if not report or (report.creator_login != user_login and not is_moderator):
+        raise ReportNotFoundError("Report not found")
+    return report
 
 
-async def add_service_to_cart(repo: AbstractDatabaseRepo, user_id: int, service_id: int) -> domains.OrderDetails:
-    service = await repo.get_service_by_id(service_id)
-    if not service:
-        raise ServiceNotFoundError("Service not found")
+async def add_assessment_to_basket(repo: AbstractDatabaseRepo, user_id: int, assessment_id: int) -> domains.AssessmentReportDetails:
+    assessment = await repo.get_vulnerability_assessment_by_id(assessment_id)
+    if not assessment:
+        raise VulnerabilityAssessmentNotFoundError("Vulnerability assessment not found")
     
-    draft_order = await repo.get_draft_order_by_user_id(user_id)
-    if not draft_order:
-        draft_order = await repo.create_draft_order(user_id)
+    draft_report = await repo.get_draft_report_by_user_id(user_id)
+    if not draft_report:
+        draft_report = await repo.create_draft_report(user_id)
     
-    is_present = any(item.service.id == service_id for item in draft_order.services)
+    is_present = any(item.vulnerability_assessment.id == assessment_id for item in draft_report.components)
     
     if not is_present:
-        await repo.add_service_to_order(draft_order.id, service_id, service.price)
-        return await repo.get_full_order_details(draft_order.id)
+        await repo.add_assessment_to_report(draft_report.id, assessment_id, assessment.price)
+        return await repo.get_full_report_details(draft_report.id)
 
-    return draft_order
+    return draft_report
 
 
-async def remove_service_from_cart(repo: AbstractDatabaseRepo, user_id: int, service_id: int) -> domains.OrderDetails:
+async def remove_assessment_from_basket(repo: AbstractDatabaseRepo, user_id: int, assessment_id: int) -> domains.AssessmentReportDetails:
     """
-    Удаляет услугу из корзины пользователя.
+    Удаляет оценку уязвимости из корзины пользователя.
     Возвращает актуальное состояние корзины.
     """
-    draft_order = await repo.get_draft_order_by_user_id(user_id)
-    if not draft_order:
-        raise OrderNotFoundError("Cart not found")
+    draft_report = await repo.get_draft_report_by_user_id(user_id)
+    if not draft_report:
+        raise ReportNotFoundError("Basket not found")
     
-    deleted = await repo.delete_service_from_order(draft_order.id, service_id)
+    deleted = await repo.delete_assessment_from_report(draft_report.id, assessment_id)
     if not deleted:
-        raise ServiceNotFoundError("Service not found in cart")
+        raise VulnerabilityAssessmentNotFoundError("Vulnerability assessment not found in basket")
     
-    return await repo.get_full_order_details(draft_order.id)
+    return await repo.get_full_report_details(draft_report.id)
 
 
-async def update_cart_item_details(repo: AbstractDatabaseRepo, user_id: int, service_id: int, item_data: domains.CartItemUpdate) -> domains.OrderDetails:
+async def update_basket_item_details(repo: AbstractDatabaseRepo, user_id: int, assessment_id: int, item_data: domains.AssessmentBasketItemUpdate) -> domains.AssessmentReportDetails:
     """
-    Обновляет детали (уровень защиты, комментарий) для услуги в корзине.
+    Обновляет детали (уровень защиты, комментарий) для оценки уязвимости в корзине.
     Возвращает актуальное состояние корзины.
     """
-    draft_order = await repo.get_draft_order_by_user_id(user_id)
-    if not draft_order:
-        raise OrderNotFoundError("Cart not found")
+    draft_report = await repo.get_draft_report_by_user_id(user_id)
+    if not draft_report:
+        raise ReportNotFoundError("Basket not found")
         
-    await repo.update_association(draft_order.id, service_id, **item_data.model_dump())
-    return await repo.get_full_order_details(draft_order.id)
+    await repo.update_component(draft_report.id, assessment_id, **item_data.model_dump())
+    return await repo.get_full_report_details(draft_report.id)
 
 
-async def form_order(repo: AbstractDatabaseRepo, order_id: int, user_id: int, payload: domains.OrderFormPayload):
-    order = await repo.get_full_order_details(order_id)
-    if not order or order.created_by != user_id or order.status != models.OrderStatus.DRAFT:
-        raise OrderNotFoundError("Draft order not found for this user")
+async def form_report(repo: AbstractDatabaseRepo, report_id: int, user_id: int, payload: domains.AssessmentReportFormPayload):
+    report = await repo.get_full_report_details(report_id)
+    if not report or report.created_by != user_id or report.status != models.ReportStatus.DRAFT:
+        raise ReportNotFoundError("Draft report not found for this user")
 
-    for item in payload.services:
-        await repo.update_association(
-            order_id=order.id,
-            service_id=item.service_id,
+    for item in payload.components:
+        await repo.update_component(
+            report_id=report.id,
+            assessment_id=item.assessment_id,
             protection_level=item.protection_level,
             comment=item.comment
         )
     
-    await repo.update_order(
-        order_id=order.id,
+    await repo.update_report(
+        report_id=report.id,
         target_system_info=payload.target_system_info,
-        status=models.OrderStatus.FORMED,
+        status=models.ReportStatus.FORMED,
         formation_date=datetime.now(timezone.utc)
     )
 
 
-async def complete_order(repo: AbstractDatabaseRepo, order_id: int, moderator_id: int):
-    order_details = await repo.get_full_order_details(order_id)
-    if not order_details or order_details.status != models.OrderStatus.FORMED:
-        raise OrderNotFoundError("A 'formed' order is required to complete")
+async def complete_report(repo: AbstractDatabaseRepo, report_id: int, moderator_id: int):
+    report_details = await repo.get_full_report_details(report_id)
+    if not report_details or report_details.status != models.ReportStatus.FORMED:
+        raise ReportNotFoundError("A 'formed' report is required to complete")
 
     protection_to_likelihood = {"none": 3, "basic": 2, "full": 1}
     max_risk_score = 0
     
-    for item in order_details.services:
+    for item in report_details.components:
         likelihood = protection_to_likelihood.get(item.protection_level.value, 3)
-        impact = item.service.impact_level
+        impact = item.vulnerability_assessment.impact_level
         risk_score = likelihood * impact
         if risk_score > max_risk_score:
             max_risk_score = risk_score
     
-    await repo.update_order(
-        order_id=order_details.id,
-        status=models.OrderStatus.COMPLETED,
+    await repo.update_report(
+        report_id=report_details.id,
+        status=models.ReportStatus.COMPLETED,
         completion_date=datetime.now(timezone.utc),
         moderated_by=moderator_id,
         risk_score=max_risk_score
     )
 
 
-async def cancel_order(repo: AbstractDatabaseRepo, order_id: int, moderator_id: int):
-    order = await repo.get_full_order_details(order_id)
-    if not order or order.status != models.OrderStatus.FORMED:
-        raise OrderNotFoundError("A 'formed' order is required to cancel")
+async def cancel_report(repo: AbstractDatabaseRepo, report_id: int, moderator_id: int):
+    report = await repo.get_full_report_details(report_id)
+    if not report or report.status != models.ReportStatus.FORMED:
+        raise ReportNotFoundError("A 'formed' report is required to cancel")
 
-    await repo.update_order(
-        order_id=order.id,
-        status=models.OrderStatus.CANCELLED,
+    await repo.update_report(
+        report_id=report.id,
+        status=models.ReportStatus.CANCELLED,
         completion_date=datetime.now(timezone.utc),
         moderated_by=moderator_id
     )
 
 
-async def delete_draft_order(repo: AbstractDatabaseRepo, order_id: int, user_id: int):
-    order = await repo.get_full_order_details(order_id)
-    if not order or order.created_by != user_id or order.status != models.OrderStatus.DRAFT:
-        raise OrderNotFoundError("Draft order not found for this user")
+async def delete_draft_report(repo: AbstractDatabaseRepo, report_id: int, user_id: int):
+    report = await repo.get_full_report_details(report_id)
+    if not report or report.created_by != user_id or report.status != models.ReportStatus.DRAFT:
+        raise ReportNotFoundError("Draft report not found for this user")
     
-    await repo.update_order(order_id=order.id, status=models.OrderStatus.DELETED)
+    await repo.update_report(report_id=report.id, status=models.ReportStatus.DELETED)
 
 
-async def update_order_info(repo: AbstractDatabaseRepo, order_id: int, user_id: int, order_data: domains.OrderUpdate):
-    order = await repo.get_full_order_details(order_id)
-    if not order or order.created_by != user_id:
-        raise OrderNotFoundError("Order not found")
+async def update_report_info(repo: AbstractDatabaseRepo, report_id: int, user_id: int, report_data: domains.AssessmentReportUpdate):
+    report = await repo.get_full_report_details(report_id)
+    if not report or report.created_by != user_id:
+        raise ReportNotFoundError("Report not found")
     
-    await repo.update_order(order_id=order.id, target_system_info=order_data.target_system_info)
+    await repo.update_report(report_id=report.id, target_system_info=report_data.target_system_info)

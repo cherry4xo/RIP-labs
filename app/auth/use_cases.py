@@ -1,7 +1,7 @@
 from app import domains
 from app.interfaces import AbstractDatabaseRepo, AbstractFileStorage
 from app.auth import security
-from app.interfaces import ServiceNotFoundError, OrderNotFoundError
+from app.interfaces import VulnerabilityAssessmentNotFoundError, ReportNotFoundError
 from fastapi import HTTPException, status
 
 

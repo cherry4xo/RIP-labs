@@ -9,142 +9,142 @@ from app.use_cases import order as order_use_cases
 from app.auth.dependencies import CurrentUserDep, ModeratorDep
 from app.core.database import DBSessionDep
 from app.repository import SqlAlchemyDatabaseRepo
-from app.interfaces import OrderNotFoundError, ServiceNotFoundError
+from app.interfaces import ReportNotFoundError, VulnerabilityAssessmentNotFoundError
 
 router = APIRouter(tags=["Orders & Cart"])
 
-@router.get("/cart/info", response_model=domains.CartInfo)
-async def get_cart_info_endpoint(user: CurrentUserDep, db: DBSessionDep):
-    """Получение ID и количества услуг в корзине текущего пользователя."""
+@router.get("/basket/info", response_model=domains.AssessmentBasketInfo)
+async def get_basket_info_endpoint(user: CurrentUserDep, db: DBSessionDep):
+    """Получение ID и количества оценок уязвимости в корзине текущего пользователя."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
-        cart_info = await order_use_cases.get_cart_info(repo, user.id)
-        return cart_info
+        basket_info = await order_use_cases.get_basket_info(repo, user.id)
+        return basket_info
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/cart/services", response_model=domains.OrderDetails)
-async def add_to_cart(item: domains.CartItemAdd, user: CurrentUserDep, db: DBSessionDep):
-    """Добавление услуги в корзину (создает корзину, если ее нет)."""
+@router.post("/basket/assessments", response_model=domains.AssessmentReportDetails)
+async def add_to_basket(item: domains.AssessmentBasketItemAdd, user: CurrentUserDep, db: DBSessionDep):
+    """Добавление оценки уязвимости в корзину (создает корзину, если ее нет)."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
-        updated_cart = await order_use_cases.add_service_to_cart(repo, user.id, item.service_id)
+        updated_basket = await order_use_cases.add_assessment_to_basket(repo, user.id, item.assessment_id)
         await db.commit()
-        return updated_cart
-    except ServiceNotFoundError as e:
+        return updated_basket
+    except VulnerabilityAssessmentNotFoundError as e:
         await db.rollback()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
-@router.delete("/cart/services/{service_id}", response_model=domains.OrderDetails)
-async def remove_from_cart(service_id: int, user: CurrentUserDep, db: DBSessionDep):
-    """Удаление услуги из корзины."""
+@router.delete("/basket/assessments/{assessment_id}", response_model=domains.AssessmentReportDetails)
+async def remove_from_basket(assessment_id: int, user: CurrentUserDep, db: DBSessionDep):
+    """Удаление оценки уязвимости из корзины."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
-        updated_cart = await order_use_cases.remove_service_from_cart(repo, user.id, service_id)
+        updated_basket = await order_use_cases.remove_assessment_from_basket(repo, user.id, assessment_id)
         await db.commit()
-        return updated_cart
-    except (OrderNotFoundError, ServiceNotFoundError) as e:
+        return updated_basket
+    except (ReportNotFoundError, VulnerabilityAssessmentNotFoundError) as e:
         await db.rollback()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
-@router.put("/cart/services/{service_id}", response_model=domains.OrderDetails)
-async def update_cart_item(service_id: int, item_data: domains.CartItemUpdate, user: CurrentUserDep, db: DBSessionDep):
-    """Изменение полей м-м (уровня защиты, комментария) для услуги в корзине."""
+@router.put("/basket/assessments/{assessment_id}", response_model=domains.AssessmentReportDetails)
+async def update_basket_item(assessment_id: int, item_data: domains.AssessmentBasketItemUpdate, user: CurrentUserDep, db: DBSessionDep):
+    """Изменение полей м-м (уровня защиты, комментария) для оценки уязвимости в корзине."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
-        updated_cart = await order_use_cases.update_cart_item_details(repo, user.id, service_id, item_data)
+        updated_basket = await order_use_cases.update_basket_item_details(repo, user.id, assessment_id, item_data)
         await db.commit()
-        return updated_cart
-    except OrderNotFoundError as e:
+        return updated_basket
+    except ReportNotFoundError as e:
         await db.rollback()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
-@router.get("/orders", response_model=List[domains.OrderSummary])
-async def get_orders_endpoint(
+@router.get("/reports", response_model=List[domains.AssessmentReportSummary])
+async def get_reports_endpoint(
     user: CurrentUserDep,
     db: DBSessionDep,
-    status: Optional[domains.OrderStatus] = None,
+    status: Optional[domains.ReportStatus] = None,
     date_from: Optional[date] = None,
     date_to: Optional[date] = None,
 ):
-    """Получение списка оформленных заявок с фильтрацией."""
+    """Получение списка оформленных отчетов с фильтрацией."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
-        orders = await order_use_cases.get_orders_list(
+        reports = await order_use_cases.get_reports_list(
             repo, user.id, status.value if status else None, date_from, date_to
         )
-        return orders
+        return reports
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.get("/orders/{order_id}", response_model=domains.OrderDetails)
-async def get_order_endpoint(order_id: int, user: CurrentUserDep, db: DBSessionDep):
-    """Получение детальной информации о заявке."""
+@router.get("/reports/{report_id}", response_model=domains.AssessmentReportDetails)
+async def get_report_endpoint(report_id: int, user: CurrentUserDep, db: DBSessionDep):
+    """Получение детальной информации об отчете."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
-        order = await order_use_cases.get_order_details(repo, order_id, user.login, user.is_moderator)
-        return order
-    except OrderNotFoundError as e:
+        report = await order_use_cases.get_report_details(repo, report_id, user.login, user.is_moderator)
+        return report
+    except ReportNotFoundError as e:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.put("/orders/{order_id}", response_model=domains.OrderDetails)
-async def update_order(order_id: int, order_data: domains.OrderUpdate, user: CurrentUserDep, db: DBSessionDep):
-    """Изменение полей заявки (например, целевой системы)."""
+@router.put("/reports/{report_id}", response_model=domains.AssessmentReportDetails)
+async def update_report(report_id: int, report_data: domains.AssessmentReportUpdate, user: CurrentUserDep, db: DBSessionDep):
+    """Изменение полей отчета (например, целевой системы)."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
-        await order_use_cases.update_order_info(repo, order_id, user.id, order_data)
+        await order_use_cases.update_report_info(repo, report_id, user.id, report_data)
         await db.commit()
-        return await repo.get_full_order_details(order_id)
-    except OrderNotFoundError as e:
+        return await repo.get_full_report_details(report_id)
+    except ReportNotFoundError as e:
         await db.rollback()
         raise HTTPException(status_code=404, detail=str(e))
 
-@router.delete("/orders/{order_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_order(order_id: int, user: CurrentUserDep, db: DBSessionDep):
-    """Удаление заявки-черновика (логическое)."""
+@router.delete("/reports/{report_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_report(report_id: int, user: CurrentUserDep, db: DBSessionDep):
+    """Удаление отчета-черновика (логическое)."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
-        await order_use_cases.delete_draft_order(repo, order_id, user.id)
+        await order_use_cases.delete_draft_report(repo, report_id, user.id)
         await db.commit()
-    except OrderNotFoundError as e:
+    except ReportNotFoundError as e:
         await db.rollback()
         raise HTTPException(status_code=404, detail=str(e))
     return None
 
-@router.put("/orders/{order_id}/form", response_model=domains.OrderDetails)
-async def form_order(order_id: int, payload: domains.OrderFormPayload, user: CurrentUserDep, db: DBSessionDep):
-    """Сформировать заявку (создателем)."""
+@router.put("/reports/{report_id}/form", response_model=domains.AssessmentReportDetails)
+async def form_report(report_id: int, payload: domains.AssessmentReportFormPayload, user: CurrentUserDep, db: DBSessionDep):
+    """Сформировать отчет (создателем)."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
-        await order_use_cases.form_order(repo, order_id, user.id, payload)
+        await order_use_cases.form_report(repo, report_id, user.id, payload)
         await db.commit()
-        return await repo.get_full_order_details(order_id)
-    except OrderNotFoundError as e:
+        return await repo.get_full_report_details(report_id)
+    except ReportNotFoundError as e:
         await db.rollback()
         raise HTTPException(status_code=404, detail=str(e))
 
-@router.put("/orders/{order_id}/complete", response_model=domains.OrderDetails, dependencies=[ModeratorDep])
-async def complete_order(order_id: int, moderator: CurrentUserDep, db: DBSessionDep):
-    """Завершить заявку (модератором)."""
+@router.put("/reports/{report_id}/complete", response_model=domains.AssessmentReportDetails, dependencies=[ModeratorDep])
+async def complete_report(report_id: int, moderator: CurrentUserDep, db: DBSessionDep):
+    """Завершить отчет (модератором)."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
-        await order_use_cases.complete_order(repo, order_id, moderator.id)
+        await order_use_cases.complete_report(repo, report_id, moderator.id)
         await db.commit()
-        return await repo.get_full_order_details(order_id)
-    except OrderNotFoundError as e:
+        return await repo.get_full_report_details(report_id)
+    except ReportNotFoundError as e:
         await db.rollback()
         raise HTTPException(status_code=404, detail=str(e))
 
-@router.put("/orders/{order_id}/cancel", response_model=domains.OrderDetails, dependencies=[ModeratorDep])
-async def cancel_order(order_id: int, moderator: CurrentUserDep, db: DBSessionDep):
-    """Отклонить заявку (модератором)."""
+@router.put("/reports/{report_id}/cancel", response_model=domains.AssessmentReportDetails, dependencies=[ModeratorDep])
+async def cancel_report(report_id: int, moderator: CurrentUserDep, db: DBSessionDep):
+    """Отклонить отчет (модератором)."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
-        await order_use_cases.cancel_order(repo, order_id, moderator.id)
+        await order_use_cases.cancel_report(repo, report_id, moderator.id)
         await db.commit()
-        return await repo.get_full_order_details(order_id)
-    except OrderNotFoundError as e:
+        return await repo.get_full_report_details(report_id)
+    except ReportNotFoundError as e:
         await db.rollback()
         raise HTTPException(status_code=404, detail=str(e))

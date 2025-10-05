@@ -8,7 +8,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.auth.security import get_password_hash
 from app.core.database import get_db_session
-from app.models import Service, ServiceStatus, ServiceAssessmentType, User
+from app.models import VulnerabilityAssessment, AssessmentStatus, VulnerabilityAssessmentType, User
 
 
 # --- Данные, которые мы хотим добавить ---
@@ -18,8 +18,8 @@ SERVICES_DATA = [
         'short_description': 'Проверка конфигурации серверов, сети.',
         'description': 'Комплексная проверка конфигурации серверов, сетевого оборудования и политик безопасности на соответствие лучшим практикам.',
         'price': Decimal('50000.00'),
-        'assessment_type': ServiceAssessmentType.INFRASTRUCTURE_AUDIT,
-        'status': ServiceStatus.AVAILABLE,
+        'assessment_type': VulnerabilityAssessmentType.INFRASTRUCTURE_AUDIT,
+        'status': AssessmentStatus.AVAILABLE,
         'image_url': 'http://localhost:9000/main/audit.png',
         'impact_level': 3 # Критический ущерб
     },
@@ -28,8 +28,8 @@ SERVICES_DATA = [
         'short_description': 'Анализ на OWASP Top 10.',
         'description': 'Анализ вашего сайта на наличие уязвимостей из списка OWASP Top 10, включая SQL-инъекции, XSS и CSRF.',
         'price': Decimal('35000.00'),
-        'assessment_type': ServiceAssessmentType.WEB_APP_PENTEST,
-        'status': ServiceStatus.AVAILABLE,
+        'assessment_type': VulnerabilityAssessmentType.WEB_APP_PENTEST,
+        'status': AssessmentStatus.AVAILABLE,
         'image_url': 'http://localhost:9000/main/pentest.png',
         'impact_level': 3 # Критический ущерб
     },
@@ -38,8 +38,8 @@ SERVICES_DATA = [
         'short_description': 'Поиск открытых портов, уязвимостей.',
         'description': 'Комплексная проверка конфигурации серверов, сетевого оборудования и политик безопасности на соответствие лучшим практикам.',
         'price': Decimal('15000.00'),
-        'assessment_type': ServiceAssessmentType.NETWORK_SCAN,
-        'status': ServiceStatus.AVAILABLE,
+        'assessment_type': VulnerabilityAssessmentType.NETWORK_SCAN,
+        'status': AssessmentStatus.AVAILABLE,
         'image_url': 'http://localhost:9000/main/network.png',
         'impact_level': 2 # Средний ущерб
     },
@@ -47,8 +47,8 @@ SERVICES_DATA = [
         'title': 'DDoS-атака (симуляция)',
         'description': 'Тестирование на отказ в обслуживании.', # Краткое описание
         'price': Decimal('25000.00'),
-        'assessment_type': ServiceAssessmentType.NETWORK_SCAN,
-        'status': ServiceStatus.AVAILABLE,
+        'assessment_type': VulnerabilityAssessmentType.NETWORK_SCAN,
+        'status': AssessmentStatus.AVAILABLE,
         'image_url': 'http://localhost:9000/main/ddos.png',
         'impact_level': 2 # Средний ущерб (влияет на доступность, но не на данные)
     },
@@ -56,8 +56,8 @@ SERVICES_DATA = [
         'title': 'Аудит на Cross-Site Scripting (XSS)',
         'description': 'Проверка на внедрение вредоносных скриптов.', # Краткое описание
         'price': Decimal('18000.00'),
-        'assessment_type': ServiceAssessmentType.WEB_APP_PENTEST,
-        'status': ServiceStatus.AVAILABLE,
+        'assessment_type': VulnerabilityAssessmentType.WEB_APP_PENTEST,
+        'status': AssessmentStatus.AVAILABLE,
         'image_url': 'http://localhost:9000/main/xss.png',
         'impact_level': 2 # Средний ущерб (может вести к краже сессий пользователей)
     },
@@ -74,18 +74,18 @@ async def seed_services():
     # Используем генератор сессий из вашего приложения
     async for session in get_db_session():
         for service_data in SERVICES_DATA:
-            # Проверяем, существует ли уже услуга с таким названием
-            stmt = select(Service).where(Service.title == service_data["title"])
+            # Проверяем, существует ли уже оценка уязвимости с таким названием
+            stmt = select(VulnerabilityAssessment).where(VulnerabilityAssessment.title == service_data["title"])
             result = await session.execute(stmt)
             existing_service = result.scalars().first()
 
             if existing_service:
-                print(f"Service '{service_data['title']}' already exists, skipping.")
+                print(f"Vulnerability assessment '{service_data['title']}' already exists, skipping.")
             else:
                 # Если не существует, создаем и добавляем
-                new_service = Service(**service_data)
+                new_service = VulnerabilityAssessment(**service_data)
                 session.add(new_service)
-                print(f"Adding service '{service_data['title']}'...")
+                print(f"Adding vulnerability assessment '{service_data['title']}'...")
         
         await session.commit()
         print("Services seeding finished successfully.")
@@ -143,8 +143,8 @@ async def seed_admin():
 
 async def main():
     # Главная функция для запуска
-    # await seed_services()
-    # await seed_users()
+    await seed_services()
+    await seed_users()
     await seed_admin()
 
 

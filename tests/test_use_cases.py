@@ -53,126 +53,126 @@ class InMemoryRepository(interfaces.AbstractDatabaseRepo):
             return self.users[user_id]
         return None
 
-    async def get_service_by_id(self, service_id: int):
-        service_orm = self.services.get(service_id)
-        return domains.Service.model_validate(service_orm) if service_orm else None
+    async def get_vulnerability_assessment_by_id(self, assessment_id: int):
+        service_orm = self.services.get(assessment_id)
+        return domains.VulnerabilityAssessment.model_validate(service_orm) if service_orm else None
 
-    async def get_services_with_filters(self, title: Optional[str], assessment_type: Optional[str]):
-        return [domains.Service.model_validate(s) for s in self.services.values()]
+    async def get_vulnerability_assessments_with_filters(self, title: Optional[str], assessment_type: Optional[str]):
+        return [domains.VulnerabilityAssessment.model_validate(s) for s in self.services.values()]
 
-    async def create_service(self, service_data: domains.ServiceCreate):
+    async def create_vulnerability_assessment(self, assessment_data: domains.VulnerabilityAssessmentCreate):
         new_id = self._next_id()
-        service = models.Service(id=new_id, **service_data.model_dump())
-        self.services[new_id] = service
-        return domains.Service.model_validate(service)
+        assessment = models.VulnerabilityAssessment(id=new_id, **assessment_data.model_dump())
+        self.services[new_id] = assessment
+        return domains.VulnerabilityAssessment.model_validate(assessment)
 
-    async def update_service(self, service_id: int, service_data: domains.ServiceUpdatePartial):
-        if service_id in self.services:
-            update_data = service_data.model_dump(exclude_unset=True)
+    async def update_vulnerability_assessment(self, assessment_id: int, assessment_data: domains.VulnerabilityAssessmentUpdatePartial):
+        if assessment_id in self.services:
+            update_data = assessment_data.model_dump(exclude_unset=True)
             for key, value in update_data.items():
-                setattr(self.services[service_id], key, value)
-            return domains.Service.model_validate(self.services[service_id])
+                setattr(self.services[assessment_id], key, value)
+            return domains.VulnerabilityAssessment.model_validate(self.services[assessment_id])
         return None
 
-    async def delete_service(self, service_id: int) -> bool:
-        if service_id in self.services:
-            del self.services[service_id]
+    async def delete_vulnerability_assessment(self, assessment_id: int) -> bool:
+        if assessment_id in self.services:
+            del self.services[assessment_id]
             return True
         return False
 
-    async def get_draft_order_by_user_id(self, user_id: int) -> Optional[domains.OrderDetails]:
-        """Находит ORM-модель заказа и конвертирует ее в Pydantic-модель."""
-        for order_orm in self.orders.values():
-            if order_orm.created_by == user_id and order_orm.status == models.OrderStatus.DRAFT:
-                return await self.get_full_order_details(order_orm.id)
+    async def get_draft_report_by_user_id(self, user_id: int) -> Optional[domains.AssessmentReportDetails]:
+        """Находит ORM-модель отчета и конвертирует ее в Pydantic-модель."""
+        for report_orm in self.orders.values():
+            if report_orm.created_by == user_id and report_orm.status == models.ReportStatus.DRAFT:
+                return await self.get_full_report_details(report_orm.id)
         return None
 
-    async def create_draft_order(self, user_id: int) -> domains.OrderDetails:
+    async def create_draft_report(self, user_id: int) -> domains.AssessmentReportDetails:
         """Создает ORM-модель и сразу конвертирует ее в Pydantic-модель."""
         new_id = self._next_id()
         if not self.users.get(user_id):
             self.users[user_id] = models.User(id=user_id, login=f"user{user_id}")
             
-        order = models.Order(id=new_id, created_by=user_id, status=models.OrderStatus.DRAFT, created_at=datetime.now())
-        self.orders[new_id] = order
-        return await self.get_full_order_details(new_id)
+        report = models.AssessmentReport(id=new_id, created_by=user_id, status=models.ReportStatus.DRAFT, created_at=datetime.now())
+        self.orders[new_id] = report
+        return await self.get_full_report_details(new_id)
 
-    async def add_service_to_order(self, order_id: int, service_id: int, price: Decimal):
-        self.associations.append(models.OrdersServices(
-            order_id=order_id, 
-            service_id=service_id, 
+    async def add_assessment_to_report(self, report_id: int, assessment_id: int, price: Decimal):
+        self.associations.append(models.AssessmentComponents(
+            order_id=report_id, 
+            service_id=assessment_id, 
             price_at_order_time=price,
             protection_level=models.ProtectionLevel.NONE
         ))
 
-    async def get_association(self, order_id: int, service_id: int):
+    async def get_component(self, report_id: int, assessment_id: int):
         for assoc in self.associations:
-            if assoc.order_id == order_id and assoc.service_id == service_id:
+            if assoc.order_id == report_id and assoc.service_id == assessment_id:
                 return assoc
         return None
 
-    async def delete_service_from_order(self, order_id: int, service_id: int) -> bool:
+    async def delete_assessment_from_report(self, report_id: int, assessment_id: int) -> bool:
         initial_len = len(self.associations)
-        self.associations = [a for a in self.associations if not (a.order_id == order_id and a.service_id == service_id)]
+        self.associations = [a for a in self.associations if not (a.order_id == report_id and a.service_id == assessment_id)]
         return len(self.associations) < initial_len
 
-    async def get_orders_with_filters(self, user_id: int, status: Optional[str], date_from: Optional[date], date_to: Optional[date]):
+    async def get_reports_with_filters(self, user_id: int, status: Optional[str], date_from: Optional[date], date_to: Optional[date]):
         return []
 
-    async def get_full_order_details(self, order_id: int) -> Optional[domains.OrderDetails]:
+    async def get_full_report_details(self, report_id: int) -> Optional[domains.AssessmentReportDetails]:
         """
         Главный метод-конвертер. Собирает ORM-объекты и преобразует их 
-        в доменную модель `OrderDetails`, как это делает настоящий репозиторий.
+        в доменную модель `AssessmentReportDetails`, как это делает настоящий репозиторий.
         """
-        order_orm = self.orders.get(order_id)
-        if not order_orm: 
+        report_orm = self.orders.get(report_id)
+        if not report_orm: 
             return None
         
-        creator_orm = self.users.get(order_orm.created_by)
-        moderator_orm = self.users.get(order_orm.moderated_by) if order_orm.moderated_by else None
+        creator_orm = self.users.get(report_orm.created_by)
+        moderator_orm = self.users.get(report_orm.moderated_by) if report_orm.moderated_by else None
         
-        order_associations = [a for a in self.associations if a.order_id == order_id]
+        report_associations = [a for a in self.associations if a.order_id == report_id]
         
-        services_in_order = []
-        for assoc in order_associations:
-            service_orm = self.services.get(assoc.service_id)
-            if service_orm:
-                services_in_order.append(domains.ServiceInOrder(
-                    service=domains.Service.model_validate(service_orm),
+        components_in_report = []
+        for assoc in report_associations:
+            assessment_orm = self.services.get(assoc.service_id)
+            if assessment_orm:
+                components_in_report.append(domains.AssessmentComponent(
+                    vulnerability_assessment=domains.VulnerabilityAssessment.model_validate(assessment_orm),
                     protection_level=assoc.protection_level,
                     comment=assoc.comment,
                     price_at_order_time=assoc.price_at_order_time
                 ))
         
-        return domains.OrderDetails(
-            id=order_orm.id,
-            status=order_orm.status,
-            created_at=order_orm.created_at,
-            created_by=order_orm.created_by,
+        return domains.AssessmentReportDetails(
+            id=report_orm.id,
+            status=report_orm.status,
+            created_at=report_orm.created_at,
+            created_by=report_orm.created_by,
             creator_login=creator_orm.login if creator_orm else "unknown",
             moderator_login=moderator_orm.login if moderator_orm else None,
-            formation_date=order_orm.formation_date,
-            completion_date=order_orm.completion_date,
-            target_system_info=order_orm.target_system_info,
-            risk_score=order_orm.risk_score,
-            services=services_in_order
+            formation_date=report_orm.formation_date,
+            completion_date=report_orm.completion_date,
+            target_system_info=report_orm.target_system_info,
+            risk_score=report_orm.risk_score,
+            components=components_in_report
         )
 
-    async def update_order(self, order_id: int, **kwargs):
-        if order_id in self.orders:
+    async def update_report(self, report_id: int, **kwargs):
+        if report_id in self.orders:
             for key, value in kwargs.items():
-                setattr(self.orders[order_id], key, value)
+                setattr(self.orders[report_id], key, value)
 
-    async def update_association(self, order_id: int, service_id: int, **kwargs):
-        assoc = await self.get_association(order_id, service_id)
+    async def update_component(self, report_id: int, assessment_id: int, **kwargs):
+        assoc = await self.get_component(report_id, assessment_id)
         if assoc:
             for key, value in kwargs.items():
                 setattr(assoc, key, value)
 
-    async def get_cart_item_count(self, user_id: int) -> int:
-        order_details = await self.get_draft_order_by_user_id(user_id)
-        if not order_details: return 0
-        return len(order_details.services)
+    async def get_basket_item_count(self, user_id: int) -> int:
+        report_details = await self.get_draft_report_by_user_id(user_id)
+        if not report_details: return 0
+        return len(report_details.components)
 
 class InMemoryFileStorage(interfaces.AbstractFileStorage):
     """Фейковое файловое хранилище."""
@@ -190,18 +190,18 @@ class InMemoryFileStorage(interfaces.AbstractFileStorage):
 
 
 class TestOrderUseCases:
-    def _create_valid_service(self, **kwargs) -> models.Service:
+    def _create_valid_service(self, **kwargs) -> models.VulnerabilityAssessment:
         defaults = {
             "title": "Default Service",
             "short_description": "sd",
             "description": "d",
             "price": Decimal("100"),
             "impact_level": 1,
-            "assessment_type": models.ServiceAssessmentType.NETWORK_SCAN,
-            "status": models.ServiceStatus.AVAILABLE,
+            "assessment_type": models.VulnerabilityAssessmentType.NETWORK_SCAN,
+            "status": models.AssessmentStatus.AVAILABLE,
         }
         defaults.update(kwargs)
-        return models.Service(**defaults)
+        return models.VulnerabilityAssessment(**defaults)
 
     async def test_add_service_to_cart_creates_new_order(self):
         repo = InMemoryRepository()
@@ -209,19 +209,19 @@ class TestOrderUseCases:
         service_id = repo._next_id()
         repo.services[service_id] = self._create_valid_service(id=service_id)
 
-        cart = await order_use_cases.add_service_to_cart(repo, user_id, service_id)
+        cart = await order_use_cases.add_assessment_to_basket(repo, user_id, service_id)
 
         assert len(repo.orders) == 1
         new_order_orm = list(repo.orders.values())[0]
         assert new_order_orm.created_by == user_id
-        assert new_order_orm.status == models.OrderStatus.DRAFT
+        assert new_order_orm.status == models.ReportStatus.DRAFT
         
         assert len(repo.associations) == 1
         assert repo.associations[0].order_id == new_order_orm.id
         assert repo.associations[0].service_id == service_id
         
-        assert isinstance(cart, domains.OrderDetails)
-        assert len(cart.services) == 1
+        assert isinstance(cart, domains.AssessmentReportDetails)
+        assert len(cart.components) == 1
 
     async def test_form_order_success(self):
         repo = InMemoryRepository()
@@ -229,20 +229,20 @@ class TestOrderUseCases:
         service1_id = repo._next_id()
         repo.services[service1_id] = self._create_valid_service(id=service1_id, title="Crit Service", impact_level=3)
         
-        draft_order = await repo.create_draft_order(user_id)
-        await repo.add_service_to_order(draft_order.id, service1_id, Decimal("100.00"))
+        draft_order = await repo.create_draft_report(user_id)
+        await repo.add_assessment_to_report(draft_order.id, service1_id, Decimal("100.00"))
 
-        form_data = domains.OrderFormPayload(
+        form_data = domains.AssessmentReportFormPayload(
             target_system_info="test.com",
-            services=[
-                domains.OrderFormServicePayload(service_id=service1_id, protection_level=domains.ProtectionLevel.BASIC, comment=""),
+            components=[
+                domains.AssessmentReportFormComponentPayload(assessment_id=service1_id, protection_level=domains.ProtectionLevel.BASIC, comment=""),
             ]
         )
         
-        await order_use_cases.form_order(repo, draft_order.id, user_id, form_data)
+        await order_use_cases.form_report(repo, draft_order.id, user_id, form_data)
 
         formed_order = repo.orders[draft_order.id]
-        assert formed_order.status == models.OrderStatus.FORMED
+        assert formed_order.status == models.ReportStatus.FORMED
         assert formed_order.target_system_info == "test.com"
         assert formed_order.risk_score is None
 
@@ -254,7 +254,7 @@ class TestOrderUseCases:
         repo.users[moderator_id] = models.User(id=moderator_id, login=f"mod{moderator_id}")
         
         order_id = repo._next_id()
-        order = models.Order(id=order_id, created_by=user_id, created_at=datetime.now(), status=models.OrderStatus.FORMED)
+        order = models.AssessmentReport(id=order_id, created_by=user_id, created_at=datetime.now(), status=models.ReportStatus.FORMED)
         repo.orders[order_id] = order
         
         service1_id = repo._next_id()
@@ -262,21 +262,21 @@ class TestOrderUseCases:
         service2_id = repo._next_id()
         repo.services[service2_id] = self._create_valid_service(id=service2_id, impact_level=2)
         
-        repo.associations.append(models.OrdersServices(
+        repo.associations.append(models.AssessmentComponents(
             order_id=order_id, service_id=service1_id, 
             protection_level=models.ProtectionLevel.BASIC, 
             price_at_order_time=Decimal("100")
         ))
-        repo.associations.append(models.OrdersServices(
+        repo.associations.append(models.AssessmentComponents(
             order_id=order_id, service_id=service2_id, 
             protection_level=models.ProtectionLevel.FULL,
             price_at_order_time=Decimal("200")
         ))
 
-        await order_use_cases.complete_order(repo, order_id, moderator_id)
+        await order_use_cases.complete_report(repo, order_id, moderator_id)
 
         completed_order = repo.orders[order_id]
-        assert completed_order.status == models.OrderStatus.COMPLETED
+        assert completed_order.status == models.ReportStatus.COMPLETED
         assert completed_order.moderated_by == moderator_id
         assert completed_order.risk_score == 6
 
@@ -284,44 +284,44 @@ class TestOrderUseCases:
         repo = InMemoryRepository()
         user_id = 1
         moderator_id = 2
-        draft_order = await repo.create_draft_order(user_id)
+        draft_order = await repo.create_draft_report(user_id)
 
-        with pytest.raises(interfaces.OrderNotFoundError, match="A 'formed' order is required"):
-            await order_use_cases.complete_order(repo, draft_order.id, moderator_id)
+        with pytest.raises(interfaces.ReportNotFoundError, match="A 'formed' report is required"):
+            await order_use_cases.complete_report(repo, draft_order.id, moderator_id)
 
     async def test_delete_draft_order_success(self):
         repo = InMemoryRepository()
         user_id = 1
-        draft_order = await repo.create_draft_order(user_id)
+        draft_order = await repo.create_draft_report(user_id)
 
-        await order_use_cases.delete_draft_order(repo, draft_order.id, user_id)
+        await order_use_cases.delete_draft_report(repo, draft_order.id, user_id)
 
         deleted_order = repo.orders[draft_order.id]
-        assert deleted_order.status == models.OrderStatus.DELETED
+        assert deleted_order.status == models.ReportStatus.DELETED
         
     async def test_delete_draft_order_fails_if_wrong_user(self):
         repo = InMemoryRepository()
         owner_user_id = 1
         other_user_id = 2
-        draft_order = await repo.create_draft_order(owner_user_id)
+        draft_order = await repo.create_draft_report(owner_user_id)
         
-        with pytest.raises(interfaces.OrderNotFoundError):
-            await order_use_cases.delete_draft_order(repo, draft_order.id, other_user_id)
+        with pytest.raises(interfaces.ReportNotFoundError):
+            await order_use_cases.delete_draft_report(repo, draft_order.id, other_user_id)
 
 
 class TestServiceUseCases:
-    def _create_valid_service(self, **kwargs) -> models.Service:
+    def _create_valid_service(self, **kwargs) -> models.VulnerabilityAssessment:
         defaults = {
             "title": "Default Service",
             "short_description": "sd",
             "description": "d",
             "price": Decimal("100"),
             "impact_level": 1,
-            "assessment_type": models.ServiceAssessmentType.NETWORK_SCAN,
-            "status": models.ServiceStatus.AVAILABLE,
+            "assessment_type": models.VulnerabilityAssessmentType.NETWORK_SCAN,
+            "status": models.AssessmentStatus.AVAILABLE,
         }
         defaults.update(kwargs)
-        return models.Service(**defaults)
+        return models.VulnerabilityAssessment(**defaults)
 
     async def test_delete_service_with_image(self):
         db_repo = InMemoryRepository()
@@ -333,7 +333,7 @@ class TestServiceUseCases:
         db_repo.services[service_id] = self._create_valid_service(id=service_id, image_url=image_url)
         file_storage.files.add("image.png")
 
-        await service_use_cases.delete_service(db_repo, file_storage, service_id)
+        await service_use_cases.delete_vulnerability_assessment(db_repo, file_storage, service_id)
 
         assert service_id not in db_repo.services
         assert "image.png" not in file_storage.files
@@ -353,10 +353,10 @@ class TestServiceUseCases:
         mock_image.content_type = "image/jpeg"
         mock_image.file = MagicMock(spec=IO)
         
-        await service_use_cases.update_service_image(db_repo, file_storage, service_id, mock_image)
+        await service_use_cases.update_vulnerability_assessment_image(db_repo, file_storage, service_id, mock_image)
 
         assert "old_image.png" not in file_storage.files
         assert len(file_storage.files) == 1
         
-        updated_service = await db_repo.get_service_by_id(service_id)
+        updated_service = await db_repo.get_vulnerability_assessment_by_id(service_id)
         assert ".jpg" in updated_service.image_url
