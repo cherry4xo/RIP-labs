@@ -1,0 +1,624 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-10-05T12:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.0",
+  "resources": [
+    {
+      "_id": "env_1",
+      "parentId": null,
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "name": "Local Development",
+      "data": {
+        "base_url": "http://localhost:8000/api",
+        "token_creator": "",
+        "token_moderator": ""
+      },
+      "dataPropertyNames": [
+        "base_url",
+        "token_creator",
+        "token_moderator"
+      ],
+      "environment": {},
+      "isPrivate": false,
+      "meta": {},
+      "color": null,
+      "_type": "environment"
+    },
+    {
+      "_id": "req_1",
+      "parentId": "fld_1",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/auth/register",
+      "name": "POST - Регистрация нового пользователя",
+      "description": "",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"login\": \"creator_user\",\n  \"password\": \"password123\",\n  \"email\": \"creator@example.com\",\n  \"full_name\": \"Иван Иванов\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600000,
+      "_type": "request"
+    },
+    {
+      "_id": "req_2",
+      "parentId": "fld_1",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/auth/token",
+      "name": "POST - Получение JWT токена (создатель)",
+      "description": "Сохраните access_token из ответа в переменную окружения token_creator",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/x-www-form-urlencoded",
+        "params": [
+          {
+            "name": "username",
+            "value": "creator_user"
+          },
+          {
+            "name": "password",
+            "value": "password123"
+          }
+        ]
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/x-www-form-urlencoded"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600001,
+      "_type": "request"
+    },
+    {
+      "_id": "req_3",
+      "parentId": "fld_2",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/cart/info",
+      "name": "GET - Информация о корзине",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_creator}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600002,
+      "_type": "request"
+    },
+    {
+      "_id": "req_4",
+      "parentId": "fld_2",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/cart/services",
+      "name": "POST - Добавить услугу в корзину",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"service_id\": 1\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_creator}}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600003,
+      "_type": "request"
+    },
+    {
+      "_id": "req_5",
+      "parentId": "fld_2",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/cart/services/1",
+      "name": "PUT - Изменить данные в м-м",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"protection_level\": \"high\",\n  \"comment\": \"Нужна срочно\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_creator}}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600004,
+      "_type": "request"
+    },
+    {
+      "_id": "req_6",
+      "parentId": "fld_2",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/cart/services/1",
+      "name": "DELETE - Удалить услугу из корзины",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_creator}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600005,
+      "_type": "request"
+    },
+    {
+      "_id": "req_7",
+      "parentId": "fld_3",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/services",
+      "name": "GET - Список услуг с фильтрацией",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "title",
+          "value": "анализ"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_creator}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600006,
+      "_type": "request"
+    },
+    {
+      "_id": "req_8",
+      "parentId": "fld_3",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/services/1",
+      "name": "GET - Одна услуга",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_creator}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600007,
+      "_type": "request"
+    },
+    {
+      "_id": "req_9",
+      "parentId": "fld_3",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/services",
+      "name": "POST - Добавить новую услугу (модератор)",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"title\": \"Новая услуга\",\n  \"description\": \"Описание\",\n  \"assessment_type\": \"security\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_moderator}}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600008,
+      "_type": "request"
+    },
+    {
+      "_id": "req_10",
+      "parentId": "fld_3",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/services/2/image",
+      "name": "POST - Загрузить изображение к услуге",
+      "method": "POST",
+      "body": {
+        "mimeType": "multipart/form-data",
+        "params": [
+          {
+            "name": "image",
+            "type": "file",
+            "fileName": "test.jpg",
+            "value": ""
+          }
+        ]
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_moderator}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600009,
+      "_type": "request"
+    },
+    {
+      "_id": "req_11",
+      "parentId": "fld_3",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/services/2",
+      "name": "PUT - Изменить услугу",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"title\": \"Обновлённая услуга\",\n  \"description\": \"Новое описание\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_moderator}}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600010,
+      "_type": "request"
+    },
+    {
+      "_id": "req_12",
+      "parentId": "fld_3",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/services/2",
+      "name": "DELETE - Удалить услугу",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_moderator}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600011,
+      "_type": "request"
+    },
+    {
+      "_id": "req_13",
+      "parentId": "fld_4",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/orders",
+      "name": "GET - Список заявок (с фильтрацией)",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "status",
+          "value": "form"
+        },
+        {
+          "name": "date_from",
+          "value": "2025-09-01"
+        },
+        {
+          "name": "date_to",
+          "value": "2025-10-01"
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_creator}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600012,
+      "_type": "request"
+    },
+    {
+      "_id": "req_14",
+      "parentId": "fld_4",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/orders/1",
+      "name": "GET - Детали заявки",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_creator}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600013,
+      "_type": "request"
+    },
+    {
+      "_id": "req_15",
+      "parentId": "fld_4",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/orders/1",
+      "name": "PUT - Изменить заявку",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"target_system\": \"CRM\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_creator}}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600014,
+      "_type": "request"
+    },
+    {
+      "_id": "req_16",
+      "parentId": "fld_4",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/orders/1/form",
+      "name": "PUT - Сформировать заявку",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"target_system\": \"ERP\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_creator}}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600015,
+      "_type": "request"
+    },
+    {
+      "_id": "req_17",
+      "parentId": "fld_4",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/orders/1/complete",
+      "name": "PUT - Завершить заявку (модератор)",
+      "method": "PUT",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_moderator}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600016,
+      "_type": "request"
+    },
+    {
+      "_id": "req_18",
+      "parentId": "fld_4",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/orders/1/cancel",
+      "name": "PUT - Отклонить заявку",
+      "method": "PUT",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_moderator}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600017,
+      "_type": "request"
+    },
+    {
+      "_id": "req_19",
+      "parentId": "fld_4",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/orders/1",
+      "name": "DELETE - Удалить черновик",
+      "method": "DELETE",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_creator}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600018,
+      "_type": "request"
+    },
+    {
+      "_id": "req_20",
+      "parentId": "fld_5",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/auth/users/me",
+      "name": "GET - Профиль пользователя",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_creator}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600019,
+      "_type": "request"
+    },
+    {
+      "_id": "req_21",
+      "parentId": "fld_5",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/auth/users/me",
+      "name": "PUT - Обновить профиль",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"email\": \"new_email@example.com\",\n  \"full_name\": \"Иван Петров\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_creator}}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600020,
+      "_type": "request"
+    },
+    {
+      "_id": "req_22",
+      "parentId": "fld_5",
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "url": "{{base_url}}/auth/logout",
+      "name": "POST - Выход",
+      "method": "POST",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_creator}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1728129600021,
+      "_type": "request"
+    },
+    {
+      "_id": "fld_1",
+      "parentId": null,
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "name": "🔐 Аутентификация",
+      "description": "",
+      "environment": {},
+      "environmentPropertyNames": [],
+      "meta": {},
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_2",
+      "parentId": null,
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "name": "🛒 Корзина (черновик)",
+      "description": "",
+      "environment": {},
+      "environmentPropertyNames": [],
+      "meta": {},
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_3",
+      "parentId": null,
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "name": "🛍️ Услуги",
+      "description": "",
+      "environment": {},
+      "environmentPropertyNames": [],
+      "meta": {},
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_4",
+      "parentId": null,
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "name": "📋 Заявки",
+      "description": "",
+      "environment": {},
+      "environmentPropertyNames": [],
+      "meta": {},
+      "_type": "request_group"
+    },
+    {
+      "_id": "fld_5",
+      "parentId": null,
+      "modified": 1728129600000,
+      "created": 1728129600000,
+      "name": "👤 Пользователь",
+      "description": "",
+      "environment": {},
+      "environmentPropertyNames": [],
+      "meta": {},
+      "_type": "request_group"
+    }
+  ]
+}

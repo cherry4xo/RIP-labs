@@ -33,7 +33,7 @@ async def lifespan(app: FastAPI):
 
 
 def create_app():
-    app = FastAPI(lifespan=lifespan)
+    app = FastAPI(root_path="/api", lifespan=lifespan)
 
     init_middlewares(app)
     add_routes(app)

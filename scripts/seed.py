@@ -6,6 +6,7 @@ import sys
 import os
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from app.auth.security import get_password_hash
 from app.core.database import get_db_session
 from app.models import Service, ServiceStatus, ServiceAssessmentType, User
 
@@ -115,10 +116,36 @@ async def seed_users():
     print("Users seeding finished.")
 
 
+async def seed_admin():
+    print("Starting to seed admins...")
+    async for session in get_db_session():
+        # Проверяем, существует ли пользователь с логином 'user'
+        stmt = select(User).where(User.login == 'admin')
+        existing_user = await session.scalar(stmt)
+
+        if existing_user:
+            print("Default user 'admin' already exists, skipping.")
+        else:
+            # Создаем нового пользователя
+            # Важно: ID будет присвоен автоматически базой данных (serial),
+            # и он будет равен 1, если это первая запись в таблице.
+            new_user = User(
+                login='admin',
+                password_hash=get_password_hash("password"),
+                is_moderator=True
+            )
+            session.add(new_user)
+            await session.commit() # Коммитим сразу, чтобы получить ID
+            print(f"Added default admin 'admin' with ID={new_user.id} and password='password'.")
+
+    print("Admins seeding finished.")
+
+
 async def main():
     # Главная функция для запуска
-    await seed_services()
-    await seed_users()
+    # await seed_services()
+    # await seed_users()
+    await seed_admin()
 
 
 if __name__ == "__main__":

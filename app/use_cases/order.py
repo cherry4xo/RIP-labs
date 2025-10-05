@@ -1,10 +1,51 @@
 # app/use_cases/order.py
 
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from typing import List, Optional
 
 from app.interfaces import AbstractDatabaseRepo, AbstractFileStorage, ServiceNotFoundError, OrderNotFoundError
 from app import domains, models
+
+
+async def get_cart_info(repo: AbstractDatabaseRepo, user_id: int) -> domains.CartInfo:
+    """
+    Get cart information for a user.
+    Returns CartInfo with order_id and item_count.
+    """
+    draft_order = await repo.get_draft_order_by_user_id(user_id)
+    if not draft_order:
+        return domains.CartInfo(order_id=-1, item_count=0)
+    count = len(draft_order.services)
+    return domains.CartInfo(order_id=draft_order.id, item_count=count)
+
+
+async def get_orders_list(
+    repo: AbstractDatabaseRepo,
+    user_id: int,
+    status: Optional[str] = None,
+    date_from: Optional[date] = None,
+    date_to: Optional[date] = None
+) -> List[domains.OrderSummary]:
+    """
+    Get list of orders for a user with optional filtering.
+    """
+    return await repo.get_orders_with_filters(user_id, status, date_from, date_to)
+
+
+async def get_order_details(
+    repo: AbstractDatabaseRepo,
+    order_id: int,
+    user_login: str,
+    is_moderator: bool
+) -> domains.OrderDetails:
+    """
+    Get details of a specific order.
+    Validates user access permissions.
+    """
+    order = await repo.get_full_order_details(order_id)
+    if not order or (order.creator_login != user_login and not is_moderator):
+        raise OrderNotFoundError("Order not found")
+    return order
 
 
 async def add_service_to_cart(repo: AbstractDatabaseRepo, user_id: int, service_id: int) -> domains.OrderDetails:

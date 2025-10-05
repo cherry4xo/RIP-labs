@@ -14,14 +14,14 @@ from app.interfaces import OrderNotFoundError, ServiceNotFoundError
 router = APIRouter(tags=["Orders & Cart"])
 
 @router.get("/cart/info", response_model=domains.CartInfo)
-async def get_cart_info(user: CurrentUserDep, db: DBSessionDep):
+async def get_cart_info_endpoint(user: CurrentUserDep, db: DBSessionDep):
     """Получение ID и количества услуг в корзине текущего пользователя."""
     repo = SqlAlchemyDatabaseRepo(db)
-    draft_order = await repo.get_draft_order_by_user_id(user.id)
-    if not draft_order:
-        return domains.CartInfo(order_id=-1, item_count=0)
-    count = len(draft_order.services)
-    return domains.CartInfo(order_id=draft_order.id, item_count=count)
+    try:
+        cart_info = await order_use_cases.get_cart_info(repo, user.id)
+        return cart_info
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.post("/cart/services", response_model=domains.OrderDetails)
 async def add_to_cart(item: domains.CartItemAdd, user: CurrentUserDep, db: DBSessionDep):
@@ -60,7 +60,7 @@ async def update_cart_item(service_id: int, item_data: domains.CartItemUpdate, u
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
 @router.get("/orders", response_model=List[domains.OrderSummary])
-async def get_orders(
+async def get_orders_endpoint(
     user: CurrentUserDep,
     db: DBSessionDep,
     status: Optional[domains.OrderStatus] = None,
@@ -69,16 +69,25 @@ async def get_orders(
 ):
     """Получение списка оформленных заявок с фильтрацией."""
     repo = SqlAlchemyDatabaseRepo(db)
-    return await repo.get_orders_with_filters(user.id, status, date_from, date_to)
+    try:
+        orders = await order_use_cases.get_orders_list(
+            repo, user.id, status.value if status else None, date_from, date_to
+        )
+        return orders
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/orders/{order_id}", response_model=domains.OrderDetails)
-async def get_order(order_id: int, user: CurrentUserDep, db: DBSessionDep):
+async def get_order_endpoint(order_id: int, user: CurrentUserDep, db: DBSessionDep):
     """Получение детальной информации о заявке."""
     repo = SqlAlchemyDatabaseRepo(db)
-    order = await repo.get_full_order_details(order_id)
-    if not order or (order.creator_login != user.login and not user.is_moderator):
-        raise HTTPException(status_code=404, detail="Order not found")
-    return order
+    try:
+        order = await order_use_cases.get_order_details(repo, order_id, user.login, user.is_moderator)
+        return order
+    except OrderNotFoundError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.put("/orders/{order_id}", response_model=domains.OrderDetails)
 async def update_order(order_id: int, order_data: domains.OrderUpdate, user: CurrentUserDep, db: DBSessionDep):

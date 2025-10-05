@@ -95,7 +95,7 @@ class SqlAlchemyDatabaseRepo(AbstractDatabaseRepo):
         return await self.get_full_order_details(order_orm.id)
 
     async def create_draft_order(self, user_id: int) -> domains.OrderDetails:
-        new_order = models.Order(created_by=user_id, created_at=datetime.now(timezone.utc))
+        new_order = models.Order(created_by=user_id, created_at=datetime.now())
         self._session.add(new_order)
         await self._session.flush()
         return await self.get_full_order_details(new_order.id)

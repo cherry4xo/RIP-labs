@@ -50,7 +50,12 @@ class ServiceUpdatePartial(BaseModel):
     image_url: Optional[str] = None
 
 class ServiceUpdate(ServiceBase):
-    pass
+    title: Optional[str] = Field(None, min_length=3, max_length=128)
+    short_description: Optional[str] = None
+    description: Optional[str] = None
+    price: Optional[Decimal] = Field(None, gt=0)
+    impact_level: Optional[int] = Field(None, ge=1, le=3)
+    assessment_type: Optional[ServiceAssessmentType] = None
 
 class Service(ServiceBase):
     model_config = ConfigDict(from_attributes=True)
@@ -94,7 +99,7 @@ class CartItemUpdate(BaseModel):
     comment: Optional[str] = None
 
 class OrderUpdate(BaseModel):
-    target_system_info: str = Field(min_length=5)
+    target_system_info: str = Field("", min_length=5)
 
 class OrderFormServicePayload(BaseModel):
     service_id: int
