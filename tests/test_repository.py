@@ -179,7 +179,7 @@ async def test_get_full_order_details(db_session):
     user = User(id=1, login="details_user", password_hash="hash")
     service = VulnerabilityAssessment(id=1, title="Test S1", price=100, impact_level=2, assessment_type=VulnerabilityAssessmentType.NETWORK_SCAN, short_description="", description="")
     order = AssessmentReport(id=1, created_by=user.id, status=ReportStatus.FORMED, created_at=datetime.now())
-    assoc = AssessmentComponents(order_id=order.id, service_id=service.id, price_at_order_time=99, protection_level=ProtectionLevel.BASIC)
+    assoc = AssessmentComponents(report_id=order.id, vulnerability_id=service.id, price_at_order_time=99, protection_level=ProtectionLevel.BASIC)
     db_session.add_all([user, service, order, assoc])
     await db_session.commit()
     

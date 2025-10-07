@@ -45,6 +45,8 @@ services:
     container_name: adminer
     image: adminer
     restart: always
+    networks: 
+      - postgres_network
     depends_on:
       - postgres
     ports:
@@ -87,7 +89,7 @@ services:
       - ./nginx.conf:/etc/nginx/nginx.conf:ro 
     ports:
       - "9000:9000" # форвардим порт 9000 из нашей локальной сети(localhost) (forward port) на исхоодный(внутри подсети docker)(source port)
-      # - "9001:9001" # левый порт - порт вашей локальной сети компьютера, таргетный. порт справа - соурс порт - порт внутри подсети докера. 
+      - "9003:9001" # левый порт - порт вашей локальной сети компьютера, таргетный. порт справа - соурс порт - порт внутри подсети докера. 
     depends_on: # не запускай nginx пока не запустится весь кластер minio
       - minio1
       - minio2

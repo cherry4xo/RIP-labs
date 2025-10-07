@@ -1,6 +1,7 @@
 import asyncio
 from decimal import Decimal
 from sqlalchemy import select
+from datetime import datetime
 
 import sys
 import os
@@ -8,7 +9,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.auth.security import get_password_hash
 from app.core.database import get_db_session
-from app.models import VulnerabilityAssessment, AssessmentStatus, VulnerabilityAssessmentType, User
+from app.models import VulnerabilityAssessment, AssessmentStatus, VulnerabilityAssessmentType, User, AssessmentReport, ReportStatus
 
 
 # --- Данные, которые мы хотим добавить ---
@@ -141,11 +142,101 @@ async def seed_admin():
     print("Admins seeding finished.")
 
 
+async def seed_orders():
+    print("Starting to seed orders...")
+    async for session in get_db_session():
+        # Получаем пользователя 'user'
+        user_stmt = select(User).where(User.login == 'user')
+        user = await session.scalar(user_stmt)
+        
+        if not user:
+            print("User 'user' not found, skipping orders seeding.")
+            return
+
+        # Получаем все доступные услуги
+        services_stmt = select(VulnerabilityAssessment).where(
+            VulnerabilityAssessment.status == AssessmentStatus.AVAILABLE
+        )
+        services_result = await session.execute(services_stmt)
+        services = services_result.scalars().all()
+        
+        if not services:
+            print("No available services found, skipping orders seeding.")
+            return
+
+        # Создаем 3 заявки в разных статусах (кроме draft и deleted)
+        orders_data = [
+            {
+                'status': ReportStatus.FORMED,
+                'created_at': datetime.now(),
+                'created_by': user.id,
+                'target_system_info': 'Тестовая система 1',
+                'risk_score': 7  # Исправлено на диапазон 1-9
+            },
+            {
+                'status': ReportStatus.COMPLETED,
+                'created_at': datetime.now(),
+                'created_by': user.id,
+                'formation_date': datetime.now(),
+                'completion_date': datetime.now(),
+                'target_system_info': 'Тестовая система 2',
+                'risk_score': 9  # Исправлено на диапазон 1-9
+            },
+            {
+                'status': ReportStatus.CANCELLED,
+                'created_at': datetime.now(),
+                'created_by': user.id,
+                'target_system_info': 'Тестовая система 3',
+                'risk_score': 3  # Исправлено на диапазон 1-9
+            }
+        ]
+
+        from app.models import AssessmentComponents
+        from random import sample, randint
+        
+        for i, order_data in enumerate(orders_data):
+            # Проверяем, существует ли уже заявка с таким статусом для пользователя
+            stmt = select(AssessmentReport).where(
+                AssessmentReport.created_by == user.id,
+                AssessmentReport.status == order_data["status"]
+            )
+            result = await session.execute(stmt)
+            existing_order = result.scalars().first()
+
+            if existing_order:
+                print(f"Order with status '{order_data['status']}' for user 'user' already exists, skipping.")
+            else:
+                # Если не существует, создаем и добавляем
+                new_order = AssessmentReport(**order_data)
+                session.add(new_order)
+                # Фиксируем изменения, чтобы получить ID новой заявки
+                await session.flush()
+                
+                # Добавляем услуги к заявке (1-3 случайные услуги)
+                num_services = randint(1, min(3, len(services)))
+                selected_services = sample(services, num_services)
+                
+                for service in selected_services:
+                    # Создаем запись AssessmentComponents
+                    component = AssessmentComponents(
+                        vulnerability_id=service.id,
+                        report_id=new_order.id,
+                        price_at_order_time=service.price
+                    )
+                    session.add(component)
+                    
+                print(f"Adding order with status '{order_data['status']}' for user 'user' with {num_services} services...")
+
+        await session.commit()
+        print("Orders seeding finished successfully.")
+
+
 async def main():
     # Главная функция для запуска
     await seed_services()
     await seed_users()
     await seed_admin()
+    await seed_orders()
 
 
 if __name__ == "__main__":

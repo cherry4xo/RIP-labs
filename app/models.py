@@ -86,7 +86,7 @@ class AssessmentReport(Base):
     moderated_by = Column("moderated_by", ForeignKey("users.id"), nullable=True)
 
     target_system_info = Column(Text, nullable=True)
-    total_cost = Column(Integer, nullable=True)
+    total_cost = Column(Numeric(10, 2), nullable=True)
 
     risk_score = Column(Integer, nullable=True)
 
@@ -117,8 +117,8 @@ class AssessmentReport(Base):
 class AssessmentComponents(Base):
     __tablename__ = "assessment_components"
 
-    service_id = Column("service_id", ForeignKey("vulnerability_assessments.id"), primary_key=True)
-    order_id = Column("order_id", ForeignKey("assessment_reports.id"), primary_key=True)
+    vulnerability_id = Column("vulnerability_id", ForeignKey("vulnerability_assessments.id"), primary_key=True)
+    report_id = Column("report_id", ForeignKey("assessment_reports.id"), primary_key=True)
 
     price_at_order_time = Column(Numeric(10, 2), nullable=False)
 

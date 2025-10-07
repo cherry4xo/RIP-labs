@@ -102,22 +102,22 @@ class SqlAlchemyDatabaseRepo(AbstractDatabaseRepo):
 
     async def add_assessment_to_report(self, report_id: int, assessment_id: int, price: Decimal) -> None:
         new_assoc = models.AssessmentComponents(
-            order_id=report_id, service_id=assessment_id, price_at_order_time=price
+            report_id=report_id, vulnerability_id=assessment_id, price_at_order_time=price
         )
         self._session.add(new_assoc)
         await self._session.flush()
 
     async def get_component(self, report_id: int, assessment_id: int) -> Optional[models.AssessmentComponents]:
         stmt = select(models.AssessmentComponents).where(
-            models.AssessmentComponents.order_id == report_id,
-            models.AssessmentComponents.service_id == assessment_id
+            models.AssessmentComponents.report_id == report_id,
+            models.AssessmentComponents.vulnerability_id == assessment_id
         )
         return await self._session.scalar(stmt)
     
     async def delete_assessment_from_report(self, report_id: int, assessment_id: int) -> bool:
         stmt = delete(models.AssessmentComponents).where(
-            models.AssessmentComponents.order_id == report_id,
-            models.AssessmentComponents.service_id == assessment_id
+            models.AssessmentComponents.report_id == report_id,
+            models.AssessmentComponents.vulnerability_id == assessment_id
         )
         result = await self._session.execute(stmt)
         return result.rowcount > 0
@@ -197,7 +197,7 @@ class SqlAlchemyDatabaseRepo(AbstractDatabaseRepo):
     async def update_component(self, report_id: int, assessment_id: int, **kwargs) -> None:
         stmt = (
             update(models.AssessmentComponents)
-            .where(models.AssessmentComponents.order_id == report_id, models.AssessmentComponents.service_id == assessment_id)
+            .where(models.AssessmentComponents.report_id == report_id, models.AssessmentComponents.vulnerability_id == assessment_id)
             .values(**kwargs)
         )
         await self._session.execute(stmt)
@@ -207,6 +207,6 @@ class SqlAlchemyDatabaseRepo(AbstractDatabaseRepo):
         if not draft_report:
             return 0
         stmt = select(func.count()).select_from(models.AssessmentComponents).where(
-            models.AssessmentComponents.order_id == draft_report.id
+            models.AssessmentComponents.report_id == draft_report.id
         )
         return await self._session.scalar(stmt) or 0

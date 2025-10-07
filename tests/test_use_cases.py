@@ -99,21 +99,21 @@ class InMemoryRepository(interfaces.AbstractDatabaseRepo):
 
     async def add_assessment_to_report(self, report_id: int, assessment_id: int, price: Decimal):
         self.associations.append(models.AssessmentComponents(
-            order_id=report_id, 
-            service_id=assessment_id, 
+            report_id=report_id, 
+            vulnerability_id=assessment_id, 
             price_at_order_time=price,
             protection_level=models.ProtectionLevel.NONE
         ))
 
     async def get_component(self, report_id: int, assessment_id: int):
         for assoc in self.associations:
-            if assoc.order_id == report_id and assoc.service_id == assessment_id:
+            if assoc.report_id == report_id and assoc.vulnerability_id == assessment_id:
                 return assoc
         return None
 
     async def delete_assessment_from_report(self, report_id: int, assessment_id: int) -> bool:
         initial_len = len(self.associations)
-        self.associations = [a for a in self.associations if not (a.order_id == report_id and a.service_id == assessment_id)]
+        self.associations = [a for a in self.associations if not (a.report_id == report_id and a.vulnerability_id == assessment_id)]
         return len(self.associations) < initial_len
 
     async def get_reports_with_filters(self, user_id: int, status: Optional[str], date_from: Optional[date], date_to: Optional[date]):
@@ -131,11 +131,11 @@ class InMemoryRepository(interfaces.AbstractDatabaseRepo):
         creator_orm = self.users.get(report_orm.created_by)
         moderator_orm = self.users.get(report_orm.moderated_by) if report_orm.moderated_by else None
         
-        report_associations = [a for a in self.associations if a.order_id == report_id]
+        report_associations = [a for a in self.associations if a.report_id == report_id]
         
         components_in_report = []
         for assoc in report_associations:
-            assessment_orm = self.services.get(assoc.service_id)
+            assessment_orm = self.services.get(assoc.vulnerability_id)
             if assessment_orm:
                 components_in_report.append(domains.AssessmentComponent(
                     vulnerability_assessment=domains.VulnerabilityAssessment.model_validate(assessment_orm),
@@ -217,8 +217,8 @@ class TestOrderUseCases:
         assert new_order_orm.status == models.ReportStatus.DRAFT
         
         assert len(repo.associations) == 1
-        assert repo.associations[0].order_id == new_order_orm.id
-        assert repo.associations[0].service_id == service_id
+        assert repo.associations[0].report_id == new_order_orm.id
+        assert repo.associations[0].vulnerability_id == service_id
         
         assert isinstance(cart, domains.AssessmentReportDetails)
         assert len(cart.components) == 1
@@ -263,12 +263,12 @@ class TestOrderUseCases:
         repo.services[service2_id] = self._create_valid_service(id=service2_id, impact_level=2)
         
         repo.associations.append(models.AssessmentComponents(
-            order_id=order_id, service_id=service1_id, 
+            report_id=order_id, vulnerability_id=service1_id, 
             protection_level=models.ProtectionLevel.BASIC, 
             price_at_order_time=Decimal("100")
         ))
         repo.associations.append(models.AssessmentComponents(
-            order_id=order_id, service_id=service2_id, 
+            report_id=order_id, vulnerability_id=service2_id, 
             protection_level=models.ProtectionLevel.FULL,
             price_at_order_time=Decimal("200")
         ))

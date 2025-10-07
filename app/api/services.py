@@ -1,5 +1,3 @@
-# app/api/services.py
-
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, status
 from app.auth.dependencies import ModeratorDep, CurrentUserDep
@@ -9,7 +7,7 @@ from app.repository import SqlAlchemyDatabaseRepo
 from app import domains, interfaces
 from app.use_cases import service as service_use_cases
 
-router = APIRouter(prefix="/services", tags=["Services"])
+router = APIRouter(prefix="/vulnerabilities", tags=["Vulnerabilities"])
 
 
 @router.get("/", response_model=List[domains.VulnerabilityAssessment])
