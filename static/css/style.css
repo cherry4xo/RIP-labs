@@ -62,6 +62,16 @@ header {
     height: 60px;
 }
 .cart-card:hover { border-color: var(--primary-red); color: var(--text-primary); }
+.cart-card-disabled {
+    opacity: 0.5;
+    pointer-events: none;
+    cursor: not-allowed;
+}
+.cart-icon {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+}
 .cart-count {
     background-color: var(--primary-red); color: var(--text-primary);
     width: 24px; height: 24px;

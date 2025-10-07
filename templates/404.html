@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Страница не найдена{% endblock %}
+
+{% block content %}
+<div class="content-section">
+    <div class="hero-section">
+        <h1 class="page-title">404 - Страница не найдена</h1>
+    </div>
+    
+    <div class="info-card">
+        <h2>Запрашиваемая страница не существует или была удалена</h2>
+        <p>Возможно, вы перешли по недействительной ссылке или страница была удалена.</p>
+        <p>Вы можете вернуться на <a href="{{ url_for('services_list') }}">главную страницу</a> и попробовать найти нужную информацию там.</p>
+    </div>
+</div>
+{% endblock %}

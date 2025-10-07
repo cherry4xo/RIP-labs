@@ -103,6 +103,11 @@ class Order(Base):
     formation_date = Column("formation_date", DateTime, nullable=True)
     completion_date = Column("completion_date", DateTime, nullable=True)
     moderated_by = Column("moderated_by", ForeignKey("users.id"), nullable=True)
+    
+    # Fields to track who conducted/formatted the order
+    formatted_by = Column("formatted_by", ForeignKey("users.id"), nullable=True)
+    formatted_at = Column("formatted_at", DateTime, nullable=True)
+    completed_by = Column("completed_by", ForeignKey("users.id"), nullable=True)
 
     target_system_info = Column(Text, nullable=True)
     total_cost = Column(Integer, nullable=True)
