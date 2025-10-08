@@ -9,7 +9,7 @@ from app.use_cases import order as order_use_cases
 from app.auth.dependencies import CurrentUserDep, ModeratorDep
 from app.core.database import DBSessionDep
 from app.repository import SqlAlchemyDatabaseRepo
-from app.interfaces import ReportNotFoundError, VulnerabilityAssessmentNotFoundError
+from app.interfaces import ReportNotFoundError, VulnerabilityAssessmentNotFoundError, ReportBadRequest
 
 router = APIRouter(tags=["Orders & Cart"])
 
@@ -133,9 +133,9 @@ async def complete_report(report_id: int, moderator: CurrentUserDep, db: DBSessi
         await order_use_cases.complete_report(repo, report_id, moderator.id)
         await db.commit()
         return await repo.get_full_report_details(report_id)
-    except ReportNotFoundError as e:
+    except ReportBadRequest as e:
         await db.rollback()
-        raise HTTPException(status_code=404, detail=str(e))
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.put("/reports/{report_id}/cancel", response_model=domains.AssessmentReportDetails, dependencies=[ModeratorDep])
 async def cancel_report(report_id: int, moderator: CurrentUserDep, db: DBSessionDep):

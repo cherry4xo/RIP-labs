@@ -3,7 +3,7 @@
 from datetime import datetime, timezone, date
 from typing import List, Optional
 
-from app.interfaces import AbstractDatabaseRepo, AbstractFileStorage, VulnerabilityAssessmentNotFoundError, ReportNotFoundError
+from app.interfaces import AbstractDatabaseRepo, AbstractFileStorage, VulnerabilityAssessmentNotFoundError, ReportNotFoundError, ReportBadRequest
 from app import domains, models
 
 
@@ -100,26 +100,26 @@ async def form_report(repo: AbstractDatabaseRepo, report_id: int, user_id: int, 
     if not report or report.created_by != user_id or report.status != models.ReportStatus.DRAFT:
         raise ReportNotFoundError("Draft report not found for this user")
 
-    for item in payload.components:
-        await repo.update_component(
-            report_id=report.id,
-            assessment_id=item.assessment_id,
-            protection_level=item.protection_level,
-            comment=item.comment
-        )
+    # for item in payload.components:
+    #     await repo.update_component(
+    #         report_id=report.id,
+    #         assessment_id=item.assessment_id,
+    #         protection_level=item.protection_level,
+    #         comment=item.comment
+    #     )
     
     await repo.update_report(
         report_id=report.id,
         target_system_info=payload.target_system_info,
         status=models.ReportStatus.FORMED,
-        formation_date=datetime.now(timezone.utc)
+        formation_date=datetime.now()
     )
 
 
 async def complete_report(repo: AbstractDatabaseRepo, report_id: int, moderator_id: int):
     report_details = await repo.get_full_report_details(report_id)
     if not report_details or report_details.status != models.ReportStatus.FORMED:
-        raise ReportNotFoundError("A 'formed' report is required to complete")
+        raise ReportBadRequest("A 'formed' report is required to complete")
 
     protection_to_likelihood = {"none": 3, "basic": 2, "full": 1}
     max_risk_score = 0
@@ -134,7 +134,7 @@ async def complete_report(repo: AbstractDatabaseRepo, report_id: int, moderator_
     await repo.update_report(
         report_id=report_details.id,
         status=models.ReportStatus.COMPLETED,
-        completion_date=datetime.now(timezone.utc),
+        completion_date=datetime.now(),
         moderated_by=moderator_id,
         risk_score=max_risk_score
     )

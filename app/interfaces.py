@@ -3,8 +3,6 @@ from typing import List, Optional, IO
 from decimal import Decimal
 from datetime import date
 
-from sqlalchemy.ext.asyncio import AsyncSession
-
 from app import domains, models
 
 
@@ -12,6 +10,9 @@ class ServiceUnavailableError(Exception):
     pass
 
 class ReportNotFoundError(Exception):
+    pass
+
+class ReportBadRequest(Exception):
     pass
 
 class VulnerabilityAssessmentNotFoundError(Exception):

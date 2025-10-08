@@ -108,7 +108,7 @@ class AssessmentReportFormComponentPayload(BaseModel):
 
 class AssessmentReportFormPayload(BaseModel):
     target_system_info: str = Field(min_length=5)
-    components: List[AssessmentReportFormComponentPayload]
+    # components: List[AssessmentReportFormComponentPayload]
 
 class AssessmentComponent(BaseModel):
     vulnerability_assessment: VulnerabilityAssessment
