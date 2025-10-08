@@ -7,7 +7,7 @@ from app.repository import SqlAlchemyDatabaseRepo
 from app import domains, interfaces
 from app.use_cases import service as service_use_cases
 
-router = APIRouter(prefix="/vulnerabilities", tags=["Vulnerabilities"])
+router = APIRouter(prefix="/services", tags=["Services"])
 
 
 @router.get("/", response_model=List[domains.VulnerabilityAssessment])

@@ -286,7 +286,7 @@ class TestOrderUseCases:
         moderator_id = 2
         draft_order = await repo.create_draft_report(user_id)
 
-        with pytest.raises(interfaces.ReportNotFoundError, match="A 'formed' report is required"):
+        with pytest.raises(interfaces.ReportBadRequest, match="A 'formed' report is required"):
             await order_use_cases.complete_report(repo, draft_order.id, moderator_id)
 
     async def test_delete_draft_order_success(self):
