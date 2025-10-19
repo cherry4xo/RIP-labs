@@ -91,6 +91,10 @@ class AssessmentBasketInfo(BaseModel):
     report_id: int
     item_count: int
 
+class DraftReportStatusInfo(BaseModel):
+    is_active: bool
+    item_count: int
+
 class AssessmentBasketItemAdd(BaseModel):
     assessment_id: int
 

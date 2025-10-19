@@ -13,9 +13,9 @@ from app.interfaces import ReportNotFoundError, VulnerabilityAssessmentNotFoundE
 
 router = APIRouter(tags=["Orders & Cart"])
 
-@router.get("/basket/info", response_model=domains.AssessmentBasketInfo)
-async def get_basket_info_endpoint(user: CurrentUserDep, db: DBSessionDep):
-    """Получение ID и количества оценок уязвимости в корзине текущего пользователя."""
+@router.get("/report/draft/info", response_model=domains.AssessmentBasketInfo)
+async def get_draft_report_info_endpoint(user: CurrentUserDep, db: DBSessionDep):
+    """Получение ID и количества оценок уязвимости в черновике отчета текущего пользователя."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
         basket_info = await order_use_cases.get_basket_info(repo, user.id)
@@ -23,9 +23,20 @@ async def get_basket_info_endpoint(user: CurrentUserDep, db: DBSessionDep):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@router.post("/basket/assessments", response_model=domains.AssessmentReportDetails)
-async def add_to_basket(item: domains.AssessmentBasketItemAdd, user: CurrentUserDep, db: DBSessionDep):
-    """Добавление оценки уязвимости в корзину (создает корзину, если ее нет)."""
+
+@router.get("/report/draft/status", response_model=domains.DraftReportStatusInfo)
+async def get_draft_report_status_endpoint(user: CurrentUserDep, db: DBSessionDep):
+    """Получение статуса активности и количества оценок уязвимости в черновике отчета текущего пользователя."""
+    repo = SqlAlchemyDatabaseRepo(db)
+    try:
+        status_info = await order_use_cases.get_draft_report_status_info(repo, user.id)
+        return status_info
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.post("/report/draft/assessments", response_model=domains.AssessmentReportDetails)
+async def add_to_draft_report(item: domains.AssessmentBasketItemAdd, user: CurrentUserDep, db: DBSessionDep):
+    """Добавление оценки уязвимости в черновик отчета (создает черновик, если его нет)."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
         updated_basket = await order_use_cases.add_assessment_to_basket(repo, user.id, item.assessment_id)
@@ -35,9 +46,9 @@ async def add_to_basket(item: domains.AssessmentBasketItemAdd, user: CurrentUser
         await db.rollback()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
-@router.delete("/basket/assessments/{assessment_id}", response_model=domains.AssessmentReportDetails)
-async def remove_from_basket(assessment_id: int, user: CurrentUserDep, db: DBSessionDep):
-    """Удаление оценки уязвимости из корзины."""
+@router.delete("/report/draft/assessments/{assessment_id}", response_model=domains.AssessmentReportDetails)
+async def remove_from_draft_report(assessment_id: int, user: CurrentUserDep, db: DBSessionDep):
+    """Удаление оценки уязвимости из черновика отчета."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
         updated_basket = await order_use_cases.remove_assessment_from_basket(repo, user.id, assessment_id)
@@ -47,9 +58,9 @@ async def remove_from_basket(assessment_id: int, user: CurrentUserDep, db: DBSes
         await db.rollback()
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
 
-@router.put("/basket/assessments/{assessment_id}", response_model=domains.AssessmentReportDetails)
-async def update_basket_item(assessment_id: int, item_data: domains.AssessmentBasketItemUpdate, user: CurrentUserDep, db: DBSessionDep):
-    """Изменение полей м-м (уровня защиты, комментария) для оценки уязвимости в корзине."""
+@router.put("/report/draft/assessments/{assessment_id}", response_model=domains.AssessmentReportDetails)
+async def update_draft_report_item(assessment_id: int, item_data: domains.AssessmentBasketItemUpdate, user: CurrentUserDep, db: DBSessionDep):
+    """Изменение полей м-м (уровня защиты, комментария) для оценки уязвимости в черновике отчета."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
         updated_basket = await order_use_cases.update_basket_item_details(repo, user.id, assessment_id, item_data)

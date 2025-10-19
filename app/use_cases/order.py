@@ -19,6 +19,18 @@ async def get_basket_info(repo: AbstractDatabaseRepo, user_id: int) -> domains.A
     return domains.AssessmentBasketInfo(report_id=draft_report.id, item_count=count)
 
 
+async def get_draft_report_status_info(repo: AbstractDatabaseRepo, user_id: int) -> domains.DraftReportStatusInfo:
+    """
+    Get draft report status information for a user.
+    Returns DraftReportStatusInfo with is_active status and item_count.
+    """
+    draft_report = await repo.get_draft_report_by_user_id(user_id)
+    if not draft_report:
+        return domains.DraftReportStatusInfo(is_active=False, item_count=0)
+    count = len(draft_report.components)
+    return domains.DraftReportStatusInfo(is_active=True, item_count=count)
+
+
 async def get_reports_list(
     repo: AbstractDatabaseRepo,
     user_id: int,
