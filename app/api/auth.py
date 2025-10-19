@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
 from typing import Annotated
 
 from app import domains
@@ -7,6 +7,7 @@ from app.core.database import DBSessionDep
 from app.repository import SqlAlchemyDatabaseRepo
 from app.auth.dependencies import CurrentUserDep
 from app.auth import security, use_cases
+from app.core.redis_utils import add_token_to_blacklist
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -59,10 +60,11 @@ async def update_users_me_endpoint(user_data: domains.UserUpdate, user: CurrentU
 
 
 @router.post("/logout")
-async def logout_user(current_user: CurrentUserDep):
+async def logout_user(current_user: CurrentUserDep, token: str = Depends(OAuth2PasswordBearer(tokenUrl="/auth/token"))):
     """
     Деавторизация пользователя.
-    В JWT-системе просто возвращает успешный статус,
-    так как удаление токена происходит на стороне клиента.
+    Добавляет токен в черный список Redis.
     """
+    # Add token to blacklist
+    await add_token_to_blacklist(token)
     return {"message": "Successfully logged out"}

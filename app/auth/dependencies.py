@@ -8,6 +8,7 @@ from app import domains, use_cases
 from app.core.database import get_db_session, AsyncSession
 from app.repository import SqlAlchemyDatabaseRepo
 from app.core import settings
+from app.core.redis_utils import is_token_blacklisted
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
@@ -22,6 +23,14 @@ async def get_current_user(
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"}
     )
+    
+    if await is_token_blacklisted(token):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has been revoked",
+            headers={"WWW-Authenticate": "Bearer"}
+        )
+    
     try:
         payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
         user_id: str = payload.get("sub")

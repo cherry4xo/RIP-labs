@@ -2,6 +2,7 @@ import os
 
 from fastapi.templating import Jinja2Templates
 from load_dotenv import load_dotenv
+import redis.asyncio as redis
 
 load_dotenv()
 
@@ -18,6 +19,12 @@ DB_NAME = os.getenv("DB_NAME", "postgres")
 DB_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 print(DB_URL)
 ECHO_SQL: bool = False
+
+REDIS_HOST = os.getenv("REDIS_HOST", "localhost")
+REDIS_PORT = os.getenv("REDIS_PORT", "6379")
+REDIS_URL = f"redis://{REDIS_HOST}:{REDIS_PORT}/0"
+
+redis_client = redis.from_url(REDIS_URL, decode_responses=True)
 
 MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "localhost:9000")
 MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "cherry4xo")
