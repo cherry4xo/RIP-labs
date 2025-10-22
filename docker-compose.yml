@@ -123,6 +123,7 @@ volumes:
   data4-1:
   data4-2:
   postgres_data:
+  redis_data:
 
 networks:
   minio_network:
