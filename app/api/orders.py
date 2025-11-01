@@ -11,7 +11,7 @@ from app.core.database import DBSessionDep
 from app.repository import SqlAlchemyDatabaseRepo
 from app.interfaces import ReportNotFoundError, VulnerabilityAssessmentNotFoundError, ReportBadRequest
 
-router = APIRouter(tags=["Orders & Cart"])
+router = APIRouter(tags=["Reports"])
 
 @router.get("/report/draft/info", response_model=domains.AssessmentBasketInfo)
 async def get_draft_report_info_endpoint(user: CurrentUserDep, db: DBSessionDep):
