@@ -1,0 +1,176 @@
+/* src/styles/global.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+
+/* === VARIABLES & GLOBAL STYLES === */
+:root {
+  --primary-red: #E4002B;
+  --text-primary: #FFFFFF;
+  --text-secondary: #a0a0a0;
+  --background-dark: #0A0A0A;
+  --border-color: #333333;
+  --card-background: rgba(15, 15, 15, 0.7);
+  --hover-background: rgba(25, 25, 25, 0.8);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Manrope', sans-serif;
+  background-color: var(--background-dark);
+  color: var(--text-primary);
+  min-height: 100vh;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: radial-gradient(circle, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.95) 100%);
+  z-index: -1;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+/* === CONTAINER === */
+.main-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+/* === PAGE TITLE === */
+.page-title {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 2.5rem;
+}
+
+/* === PRICE === */
+.price {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* === BUTTON === */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  background-color: var(--primary-red);
+  color: var(--text-primary);
+  cursor: pointer;
+}
+
+.btn-primary:hover {
+  background-color: transparent;
+  border-color: var(--primary-red);
+  color: var(--primary-red);
+}
+
+.btn-outline {
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  transition: all 0.3s;
+}
+
+.btn-outline:hover {
+  border-color: var(--primary-red);
+  color: var(--text-primary);
+}
+
+/* === CARDS === */
+.card {
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  transition: transform 0.3s, border-color 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  border-color: var(--primary-red);
+}
+
+/* === FORMS === */
+.form-control {
+  background-color: transparent;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.75rem 0;
+  font-size: 1rem;
+  transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary-red);
+  background-color: transparent;
+  box-shadow: none;
+}
+
+.form-control::placeholder {
+  color: var(--text-secondary);
+}
+
+.form-select {
+  background-color: var(--background-dark);
+  border: 1px solid var(--border-color);
+  color: var(--text-primary);
+  padding: 0.75rem;
+}
+
+.form-select:focus {
+  border-color: var(--primary-red);
+  background-color: var(--background-dark);
+  box-shadow: none;
+}
+
+/* === BOOTSTRAP OVERRIDES === */
+.navbar {
+  background-color: transparent !important;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.navbar-brand {
+  color: var(--text-primary) !important;
+  font-weight: 600;
+  font-size: 1.1rem;
+  opacity: 0.8;
+  transition: opacity 0.3s;
+}
+
+.navbar-brand:hover {
+  opacity: 1;
+}
+
+.nav-link {
+  color: var(--text-secondary) !important;
+  transition: color 0.3s;
+}
+
+.nav-link:hover {
+  color: var(--text-primary) !important;
+}
+
+.nav-link.active {
+  color: var(--primary-red) !important;
+}

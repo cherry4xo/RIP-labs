@@ -14,12 +14,20 @@ router = APIRouter(prefix="/vulnerabilities", tags=["Vulnerabilities"])
 async def get_vulnerability_assessments(
     db: DBSessionDep,
     title: Optional[str] = None,
-    assessment_type: Optional[domains.VulnerabilityAssessmentType] = None
+    assessment_type: Optional[domains.VulnerabilityAssessmentType] = None,
+    min_price: Optional[float] = None,
+    max_price: Optional[float] = None
 ):
     """Получение списка оценок уязвимости с возможностью фильтрации."""
     repo = SqlAlchemyDatabaseRepo(db)
     try:
-        assessments = await service_use_cases.get_vulnerability_assessments_list(repo, title, assessment_type.value if assessment_type else None)
+        assessments = await service_use_cases.get_vulnerability_assessments_list(
+            repo,
+            title,
+            assessment_type.value if assessment_type else None,
+            min_price,
+            max_price
+        )
         return assessments
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

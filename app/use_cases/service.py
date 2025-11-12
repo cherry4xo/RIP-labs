@@ -10,10 +10,14 @@ from app.interfaces import AbstractDatabaseRepo, AbstractFileStorage, Vulnerabil
 async def get_vulnerability_assessments_list(
     repo: AbstractDatabaseRepo,
     title: Optional[str] = None,
-    assessment_type: Optional[str] = None
+    assessment_type: Optional[str] = None,
+    min_price: Optional[float] = None,
+    max_price: Optional[float] = None
 ) -> List[domains.VulnerabilityAssessment]:
     """Get list of vulnerability assessments with optional filtering."""
-    return await repo.get_vulnerability_assessments_with_filters(title, assessment_type)
+    return await repo.get_vulnerability_assessments_with_filters(
+        title, assessment_type, min_price, max_price
+    )
 
 
 async def get_vulnerability_assessment_details(

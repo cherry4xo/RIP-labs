@@ -46,12 +46,22 @@ class SqlAlchemyDatabaseRepo(AbstractDatabaseRepo):
         assessment_orm = await self._session.get(models.VulnerabilityAssessment, assessment_id)
         return domains.VulnerabilityAssessment.model_validate(assessment_orm) if assessment_orm else None
 
-    async def get_vulnerability_assessments_with_filters(self, title: Optional[str], assessment_type: Optional[str]) -> List[domains.VulnerabilityAssessment]:
+    async def get_vulnerability_assessments_with_filters(
+        self,
+        title: Optional[str],
+        assessment_type: Optional[str],
+        min_price: Optional[float] = None,
+        max_price: Optional[float] = None
+    ) -> List[domains.VulnerabilityAssessment]:
         stmt = select(models.VulnerabilityAssessment).where(models.VulnerabilityAssessment.status != models.AssessmentStatus.DELETED).order_by(models.VulnerabilityAssessment.title)
         if title:
             stmt = stmt.where(models.VulnerabilityAssessment.title.ilike(f"%{title}%"))
         if assessment_type:
             stmt = stmt.where(models.VulnerabilityAssessment.assessment_type == assessment_type)
+        if min_price is not None:
+            stmt = stmt.where(models.VulnerabilityAssessment.price >= min_price)
+        if max_price is not None:
+            stmt = stmt.where(models.VulnerabilityAssessment.price <= max_price)
         result = await self._session.scalars(stmt)
         return [domains.VulnerabilityAssessment.model_validate(s) for s in result.all()]
 

@@ -1,0 +1,103 @@
+/* src/pages/ServicesList.css */
+
+.services-list-page {
+  padding: 2rem 0;
+}
+
+.hero-section {
+  margin-bottom: 2rem;
+}
+
+.filters-section {
+  margin-bottom: 3rem;
+  padding: 2rem;
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+}
+
+.services-grid {
+  margin-bottom: 3rem;
+}
+
+.service-card-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  height: 100%;
+}
+
+.service-card {
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  transition: transform 0.3s, border-color 0.3s;
+  height: 100%;
+}
+
+.service-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--primary-red);
+}
+
+.service-card-image {
+  overflow: hidden;
+  height: 200px;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.service-card-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.service-card:hover .service-card-image img {
+  transform: scale(1.05);
+}
+
+.service-card .card-body {
+  padding: 1.5rem;
+}
+
+.service-card .card-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  color: var(--text-primary);
+}
+
+.service-card .card-text {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  color: var(--text-secondary);
+}
+
+.service-card .price {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+}
+
+.service-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+  font-size: 0.85rem;
+}
+
+.service-meta .badge {
+  background-color: rgba(228, 0, 43, 0.2);
+  color: var(--primary-red);
+  padding: 0.25rem 0.75rem;
+  border-radius: 0;
+  font-weight: 600;
+  border: 1px solid var(--primary-red);
+}
+
+.service-meta .impact-level {
+  color: var(--text-secondary);
+}

@@ -40,7 +40,13 @@ class AbstractDatabaseRepo(abc.ABC):
     @abc.abstractmethod
     async def get_vulnerability_assessment_by_id(self, assessment_id: int) -> Optional[models.VulnerabilityAssessment]: ...
     @abc.abstractmethod
-    async def get_vulnerability_assessments_with_filters(self, title: Optional[str], assessment_type: Optional[str]) -> List[models.VulnerabilityAssessment]: ...
+    async def get_vulnerability_assessments_with_filters(
+        self,
+        title: Optional[str],
+        assessment_type: Optional[str],
+        min_price: Optional[float] = None,
+        max_price: Optional[float] = None
+    ) -> List[models.VulnerabilityAssessment]: ...
     @abc.abstractmethod
     async def create_vulnerability_assessment(self, assessment_data: domains.VulnerabilityAssessmentCreate) -> models.VulnerabilityAssessment: ...
     @abc.abstractmethod

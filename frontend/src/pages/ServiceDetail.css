@@ -1,0 +1,101 @@
+/* src/pages/ServiceDetail.css */
+
+.service-detail-page {
+  padding: 2rem 0;
+}
+
+.detail-container {
+  margin-top: 2rem;
+}
+
+.detail-image {
+  width: 100%;
+  border: 1px solid var(--border-color);
+  overflow: hidden;
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.detail-image img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.detail-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.detail-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.detail-meta .badge {
+  background-color: rgba(228, 0, 43, 0.2);
+  color: var(--primary-red);
+  padding: 0.5rem 1rem;
+  border-radius: 0;
+  font-weight: 600;
+  border: 1px solid var(--primary-red);
+  font-size: 0.9rem;
+}
+
+.detail-meta .impact-level {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+}
+
+.detail-section h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+}
+
+.detail-section p {
+  color: var(--text-secondary);
+  line-height: 1.8;
+  font-size: 1.1rem;
+}
+
+.detail-price-section {
+  background-color: var(--card-background);
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.detail-price-label {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+.detail-price-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.detail-actions {
+  display: flex;
+  gap: 1rem;
+}
+
+.detail-actions .btn {
+  flex: 1;
+}
+
+@media (max-width: 991px) {
+  .detail-image {
+    margin-bottom: 2rem;
+  }
+}
