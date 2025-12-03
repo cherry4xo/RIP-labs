@@ -174,3 +174,270 @@ a {
 .nav-link.active {
   color: var(--primary-red) !important;
 }
+
+/* Bootstrap Button Overrides */
+.btn-primary {
+  background-color: var(--primary-red) !important;
+  border-color: var(--primary-red) !important;
+  color: var(--text-primary) !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus,
+.btn-primary:active {
+  background-color: transparent !important;
+  border-color: var(--primary-red) !important;
+  color: var(--primary-red) !important;
+}
+
+.btn-success {
+  background-color: var(--primary-red) !important;
+  border-color: var(--primary-red) !important;
+  color: var(--text-primary) !important;
+}
+
+.btn-success:hover,
+.btn-success:focus,
+.btn-success:active {
+  background-color: transparent !important;
+  border-color: var(--primary-red) !important;
+  color: var(--primary-red) !important;
+}
+
+.btn-secondary {
+  background-color: transparent !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-secondary) !important;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus,
+.btn-secondary:active {
+  background-color: transparent !important;
+  border-color: var(--primary-red) !important;
+  color: var(--text-primary) !important;
+}
+
+.btn-danger {
+  background-color: var(--primary-red) !important;
+  border-color: var(--primary-red) !important;
+  color: var(--text-primary) !important;
+}
+
+.btn-danger:hover,
+.btn-danger:focus,
+.btn-danger:active {
+  background-color: transparent !important;
+  border-color: var(--primary-red) !important;
+  color: var(--primary-red) !important;
+}
+
+/* Bootstrap Card Overrides */
+.card {
+  background-color: var(--card-background) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.card-header {
+  background-color: rgba(25, 25, 25, 0.5) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.card-body {
+  color: var(--text-primary) !important;
+}
+
+.card-title {
+  color: var(--text-primary) !important;
+}
+
+.card-text {
+  color: var(--text-secondary) !important;
+}
+
+/* Bootstrap Table Overrides */
+.table {
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.table thead th {
+  background-color: rgba(25, 25, 25, 0.95) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.table tbody td {
+  background-color: var(--card-background) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.table tbody tr:hover td {
+  background-color: var(--hover-background) !important;
+}
+
+.table-striped tbody tr:nth-of-type(odd) > * {
+  background-color: rgba(20, 20, 20, 0.8) !important;
+  color: var(--text-primary) !important;
+}
+
+/* Bootstrap Modal Overrides */
+.modal-content {
+  background-color: var(--card-background) !important;
+  border: 2px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.modal-header {
+  background-color: rgba(25, 25, 25, 0.5) !important;
+  border-bottom: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.modal-title {
+  color: var(--text-primary) !important;
+}
+
+.modal-body {
+  color: var(--text-primary) !important;
+}
+
+.modal-footer {
+  border-top: 1px solid var(--border-color) !important;
+}
+
+.btn-close {
+  filter: invert(1) grayscale(100%) brightness(200%);
+}
+
+/* Bootstrap Form Overrides */
+.form-control,
+.form-select {
+  background-color: rgba(15, 15, 15, 0.9) !important;
+  border: 1px solid var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.form-control:focus,
+.form-select:focus {
+  background-color: rgba(20, 20, 20, 0.9) !important;
+  border-color: var(--primary-red) !important;
+  color: var(--text-primary) !important;
+  box-shadow: 0 0 0 0.25rem rgba(228, 0, 43, 0.15) !important;
+}
+
+.form-control::placeholder {
+  color: var(--text-secondary) !important;
+}
+
+.form-label {
+  color: var(--text-primary) !important;
+}
+
+.form-text {
+  color: var(--text-secondary) !important;
+}
+
+/* Bootstrap Alert Overrides */
+.alert {
+  border: 1px solid var(--border-color) !important;
+}
+
+.alert-info {
+  background-color: rgba(25, 25, 25, 0.95) !important;
+  border-color: var(--border-color) !important;
+  color: var(--text-primary) !important;
+}
+
+.alert-danger {
+  background-color: rgba(228, 0, 43, 0.1) !important;
+  border-color: var(--primary-red) !important;
+  color: var(--text-primary) !important;
+}
+
+.alert-success {
+  background-color: rgba(0, 228, 100, 0.1) !important;
+  border-color: #00e464 !important;
+  color: var(--text-primary) !important;
+}
+
+.alert-warning {
+  background-color: rgba(255, 193, 7, 0.1) !important;
+  border-color: #ffc107 !important;
+  color: var(--text-primary) !important;
+}
+
+.alert-heading {
+  color: var(--text-primary) !important;
+}
+
+/* Bootstrap Badge Overrides */
+.badge {
+  font-weight: 600;
+}
+
+.badge.bg-primary {
+  background-color: rgba(228, 0, 43, 0.2) !important;
+  color: var(--primary-red) !important;
+  border: 1px solid var(--primary-red);
+}
+
+.badge.bg-success {
+  background-color: rgba(0, 228, 100, 0.2) !important;
+  color: #00e464 !important;
+  border: 1px solid #00e464;
+}
+
+.badge.bg-warning {
+  background-color: rgba(255, 193, 7, 0.2) !important;
+  color: #ffc107 !important;
+  border: 1px solid #ffc107;
+}
+
+.badge.bg-danger {
+  background-color: rgba(228, 0, 43, 0.3) !important;
+  color: var(--primary-red) !important;
+  border: 1px solid var(--primary-red);
+}
+
+.badge.bg-secondary {
+  background-color: rgba(160, 160, 160, 0.2) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--text-secondary);
+}
+
+.badge.bg-dark {
+  background-color: rgba(50, 50, 50, 0.5) !important;
+  color: var(--text-secondary) !important;
+  border: 1px solid var(--border-color);
+}
+
+/* Bootstrap Spinner Override */
+.spinner-border {
+  color: var(--primary-red) !important;
+}
+
+/* Links in dark theme */
+a {
+  color: var(--primary-red);
+}
+
+a:hover {
+  color: var(--text-primary);
+}
+
+/* Text colors */
+.text-muted {
+  color: var(--text-secondary) !important;
+}
+
+.text-danger {
+  color: var(--primary-red) !important;
+}
+
+.text-dark {
+  color: var(--text-secondary) !important;
+}

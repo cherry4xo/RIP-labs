@@ -11,8 +11,33 @@
 .filters-section {
   margin-bottom: 3rem;
   padding: 2rem;
-  background-color: var(--card-background);
+  background-color: rgba(25, 25, 25, 0.95);
+  border: 2px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.filters-section .form-control,
+.filters-section .form-select {
+  color: var(--text-primary);
+  background-color: rgba(15, 15, 15, 0.9) !important;
   border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.filters-section .form-control::placeholder {
+  color: var(--text-secondary);
+}
+
+.filters-section .form-select {
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23FFFFFF' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e");
+}
+
+.filters-section .form-control:focus,
+.filters-section .form-select:focus {
+  color: var(--text-primary);
+  background-color: rgba(20, 20, 20, 0.9) !important;
+  border-color: var(--primary-red);
+  box-shadow: 0 0 0 0.25rem rgba(228, 0, 43, 0.15);
 }
 
 .services-grid {
@@ -100,4 +125,110 @@
 
 .service-meta .impact-level {
   color: var(--text-secondary);
+}
+
+/* Адаптивность для средних экранов */
+@media (max-width: 992px) {
+  .service-card-image {
+    height: 180px;
+  }
+
+  .service-card .card-title {
+    font-size: 1.35rem;
+  }
+
+  .service-card .price {
+    font-size: 1.35rem;
+  }
+}
+
+/* Адаптивность для планшетов */
+@media (max-width: 768px) {
+  .services-list-page {
+    padding: 1.5rem 0;
+  }
+
+  .hero-section {
+    margin-bottom: 1.5rem;
+  }
+
+  .hero-section .page-title {
+    font-size: 2rem;
+  }
+
+  .filters-section {
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .service-card-image {
+    height: 200px;
+  }
+
+  .service-card .card-body {
+    padding: 1.25rem;
+  }
+}
+
+/* Адаптивность для мобильных */
+@media (max-width: 576px) {
+  .services-list-page {
+    padding: 1rem 0;
+  }
+
+  .hero-section {
+    margin-bottom: 1rem;
+  }
+
+  .hero-section .page-title {
+    font-size: 1.75rem;
+  }
+
+  .filters-section {
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .filters-section .form-label {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .service-card-image {
+    height: 180px;
+  }
+
+  .service-card .card-body {
+    padding: 1rem;
+  }
+
+  .service-card .card-title {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .service-card .card-text {
+    font-size: 0.9rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .service-card .price {
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .service-meta {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .service-meta .badge {
+    font-size: 0.8rem;
+    padding: 0.2rem 0.6rem;
+  }
+
+  .service-meta .impact-level {
+    font-size: 0.8rem;
+  }
 }

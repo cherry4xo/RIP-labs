@@ -1,11 +1,11 @@
 // src/pages/Home.tsx
-import { Link } from 'react-router-dom';
-import { Container, Row, Col, Button } from 'react-bootstrap';
+import { Container, Row, Col, Carousel } from 'react-bootstrap';
 import './Home.css';
 
 export function Home() {
   return (
     <div className="home-page">
+      {/* Title Section */}
       <Container>
         <Row className="justify-content-center text-center">
           <Col lg={10}>
@@ -13,60 +13,53 @@ export function Home() {
               Профессиональная оценка <br />
               <span className="text-highlight">уязвимостей</span>
             </h1>
-
-            <p className="home-description">
-              Мы предоставляем комплексные услуги по анализу безопасности вашей
-              IT-инфраструктуры. Наша команда экспертов поможет выявить и устранить
-              уязвимости, обеспечив надежную защиту ваших данных и систем.
-            </p>
-
-            <div className="home-features">
-              <Row className="g-4">
-                <Col md={4}>
-                  <div className="feature-card">
-                    <div className="feature-icon">🔍</div>
-                    <h3>Глубокий анализ</h3>
-                    <p>
-                      Тщательное исследование всех компонентов системы с использованием
-                      современных методик и инструментов
-                    </p>
-                  </div>
-                </Col>
-
-                <Col md={4}>
-                  <div className="feature-card">
-                    <div className="feature-icon">🛡️</div>
-                    <h3>Надежная защита</h3>
-                    <p>
-                      Разработка индивидуальных рекомендаций по усилению безопасности
-                      вашей инфраструктуры
-                    </p>
-                  </div>
-                </Col>
-
-                <Col md={4}>
-                  <div className="feature-card">
-                    <div className="feature-icon">📊</div>
-                    <h3>Детальные отчеты</h3>
-                    <p>
-                      Подробная документация с описанием найденных уязвимостей и путей
-                      их устранения
-                    </p>
-                  </div>
-                </Col>
-              </Row>
-            </div>
-
-            <div className="home-cta">
-              <Link to="/services">
-                <Button className="btn-primary btn-lg">
-                  Посмотреть услуги
-                </Button>
-              </Link>
-            </div>
           </Col>
         </Row>
       </Container>
+
+      {/* Carousel Section */}
+      <div className="home-carousel-section">
+        <Carousel fade>
+          <Carousel.Item>
+            <div className="carousel-slide carousel-slide-1">
+              <div className="carousel-overlay">
+                <Container>
+                  <div className="carousel-content">
+                    <h2>Комплексная оценка безопасности</h2>
+                    <p>Выявление уязвимостей на всех уровнях вашей инфраструктуры</p>
+                  </div>
+                </Container>
+              </div>
+            </div>
+          </Carousel.Item>
+
+          <Carousel.Item>
+            <div className="carousel-slide carousel-slide-2">
+              <div className="carousel-overlay">
+                <Container>
+                  <div className="carousel-content">
+                    <h2>Пентестинг и аудит безопасности</h2>
+                    <p>Комплексная проверка систем экспертами с многолетним опытом</p>
+                  </div>
+                </Container>
+              </div>
+            </div>
+          </Carousel.Item>
+
+          <Carousel.Item>
+            <div className="carousel-slide carousel-slide-3">
+              <div className="carousel-overlay">
+                <Container>
+                  <div className="carousel-content">
+                    <h2>Детальные отчёты о безопасности</h2>
+                    <p>Подробный анализ уязвимостей с рекомендациями по устранению</p>
+                  </div>
+                </Container>
+              </div>
+            </div>
+          </Carousel.Item>
+        </Carousel>
+      </div>
     </div>
   );
 }

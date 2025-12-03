@@ -1,0 +1,17 @@
+/* src/pages/Register.css */
+
+.register-container {
+  min-height: calc(100vh - 200px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.register-wrapper {
+  width: 100%;
+  max-width: 450px;
+}
+
+.register-card {
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}

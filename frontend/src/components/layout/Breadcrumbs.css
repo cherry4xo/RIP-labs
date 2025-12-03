@@ -21,6 +21,13 @@
   color: var(--text-secondary);
 }
 
+.breadcrumb-item:not(:first-child)::before {
+  content: '/';
+  margin: 0 0.5rem;
+  font-weight: normal;
+  color: var(--text-secondary);
+}
+
 .breadcrumb-item a {
   color: var(--text-secondary);
   text-decoration: none;
@@ -32,11 +39,6 @@
 }
 
 .breadcrumb-item.active {
-  color: var(--text-primary);
+  color: var(--text-secondary);
   font-weight: 600;
-}
-
-.breadcrumb-separator {
-  margin: 0 0.5rem;
-  color: var(--border-color);
 }

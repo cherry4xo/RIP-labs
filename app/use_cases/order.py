@@ -2,9 +2,14 @@
 
 from datetime import datetime, timezone, date
 from typing import List, Optional
+import httpx
+import os
 
 from app.interfaces import AbstractDatabaseRepo, AbstractFileStorage, VulnerabilityAssessmentNotFoundError, ReportNotFoundError, ReportBadRequest
 from app import domains, models
+
+
+ASYNC_SERVICE_URL = os.getenv("ASYNC_SERVICE_URL", "http://localhost:8082")
 
 
 async def get_basket_info(repo: AbstractDatabaseRepo, user_id: int) -> domains.AssessmentBasketInfo:
@@ -119,13 +124,45 @@ async def form_report(repo: AbstractDatabaseRepo, report_id: int, user_id: int, 
     #         protection_level=item.protection_level,
     #         comment=item.comment
     #     )
-    
+
     await repo.update_report(
         report_id=report.id,
         target_system_info=payload.target_system_info,
         status=models.ReportStatus.FORMED,
         formation_date=datetime.now()
     )
+
+    # Вызываем асинхронный сервис для расчета risk_score
+    await trigger_risk_calculation(report)
+
+
+async def trigger_risk_calculation(report: domains.AssessmentReportDetails):
+    """Отправка запроса в асинхронный Go-сервис для расчета risk_score."""
+    components_data = []
+    for component in report.components:
+        components_data.append({
+            "protection_level": component.protection_level.value,
+            "impact_level": component.vulnerability_assessment.impact_level
+        })
+
+    payload = {
+        "report_id": report.id,
+        "components": components_data
+    }
+
+    try:
+        async with httpx.AsyncClient(timeout=5.0) as client:
+            response = await client.post(
+                f"{ASYNC_SERVICE_URL}/calculate-risk",
+                json=payload
+            )
+            if response.status_code == 202:
+                print(f"Risk calculation triggered for report {report.id}")
+            else:
+                print(f"Failed to trigger risk calculation: {response.status_code}")
+    except Exception as e:
+        print(f"Error calling async service: {e}")
+        # Не прерываем выполнение, даже если асинхронный сервис недоступен
 
 
 async def complete_report(repo: AbstractDatabaseRepo, report_id: int, moderator_id: int):
@@ -177,5 +214,14 @@ async def update_report_info(repo: AbstractDatabaseRepo, report_id: int, user_id
     report = await repo.get_full_report_details(report_id)
     if not report or report.created_by != user_id:
         raise ReportNotFoundError("Report not found")
-    
+
     await repo.update_report(report_id=report.id, target_system_info=report_data.target_system_info)
+
+
+async def update_risk_score(repo: AbstractDatabaseRepo, report_id: int, risk_score: int):
+    """Обновление risk_score заявки (вызывается асинхронным сервисом)."""
+    report = await repo.get_full_report_details(report_id)
+    if not report:
+        raise ReportNotFoundError("Report not found")
+
+    await repo.update_report(report_id=report.id, risk_score=risk_score)

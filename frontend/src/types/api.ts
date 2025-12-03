@@ -49,3 +49,43 @@ export interface AssessmentBasketInfo {
   report_id: number;
   item_count: number;
 }
+
+export interface DraftReportStatusInfo {
+  is_active: boolean;
+  item_count: number;
+}
+
+export interface AssessmentComponent {
+  vulnerability_assessment: VulnerabilityAssessment;
+  protection_level: ProtectionLevel;
+  comment?: string;
+  price_at_order_time: string | number;
+}
+
+export interface AssessmentReportSummary {
+  id: number;
+  status: ReportStatus;
+  formation_date?: string;
+  risk_score?: number;
+  creator_login: string;
+}
+
+export interface AssessmentReportDetails {
+  id: number;
+  status: ReportStatus;
+  created_at: string;
+  creator_login: string;
+  created_by: number;
+  moderator_login?: string;
+  formation_date?: string;
+  completion_date?: string;
+  target_system_info?: string;
+  risk_score?: number;
+  components: AssessmentComponent[];
+}
+
+export interface User {
+  id: number;
+  login: string;
+  is_moderator: boolean;
+}

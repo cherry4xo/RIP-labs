@@ -1,10 +1,14 @@
 /* src/pages/Home.css */
 
 .home-page {
-  padding: 4rem 0;
+  padding: 0;
   min-height: calc(100vh - 200px);
-  display: flex;
-  align-items: center;
+}
+
+/* Title Section */
+.home-page > .container:first-child {
+  padding-top: 4rem;
+  padding-bottom: 2rem;
 }
 
 .home-title {
@@ -21,55 +25,199 @@
 .home-description {
   font-size: 1.25rem;
   color: var(--text-secondary);
-  margin-bottom: 4rem;
+  margin-bottom: 0;
   line-height: 1.8;
 }
 
-.home-features {
-  margin-bottom: 4rem;
-}
-
-.feature-card {
-  background-color: var(--card-background);
-  border: 1px solid var(--border-color);
-  padding: 2.5rem 2rem;
-  height: 100%;
-  transition: all 0.3s ease;
-}
-
-.feature-card:hover {
-  border-color: var(--primary-red);
-  transform: translateY(-5px);
-}
-
-.feature-icon {
-  font-size: 3rem;
-  margin-bottom: 1.5rem;
-}
-
-.feature-card h3 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-  color: var(--text-primary);
-}
-
-.feature-card p {
-  color: var(--text-secondary);
-  line-height: 1.6;
+/* Carousel Section */
+.home-carousel-section {
   margin-bottom: 0;
 }
 
-.home-cta {
-  margin-top: 3rem;
+.carousel-slide {
+  height: 500px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
 }
 
+.carousel-slide-1 {
+  background: linear-gradient(135deg, rgba(15, 15, 15, 0.98) 0%, rgba(25, 25, 25, 0.95) 100%);
+}
+
+.carousel-slide-2 {
+  background: linear-gradient(135deg, rgba(20, 20, 20, 0.98) 0%, rgba(30, 30, 30, 0.95) 100%);
+}
+
+.carousel-slide-3 {
+  background: linear-gradient(135deg, rgba(15, 15, 15, 0.98) 0%, rgba(25, 25, 25, 0.95) 100%);
+}
+
+.carousel-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.1) 0%, rgba(0, 0, 0, 0.3) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.carousel-content {
+  text-align: center;
+  color: white;
+  padding: 2rem;
+}
+
+.carousel-content h2 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+  text-shadow: 2px 2px 12px rgba(0, 0, 0, 0.8);
+  color: var(--text-primary);
+}
+
+.carousel-content p {
+  font-size: 1.5rem;
+  font-weight: 400;
+  text-shadow: 1px 1px 8px rgba(0, 0, 0, 0.8);
+  color: var(--text-secondary);
+}
+
+/* Customize carousel controls */
+.home-carousel-section .carousel-control-prev-icon,
+.home-carousel-section .carousel-control-next-icon {
+  width: 3rem;
+  height: 3rem;
+  background-color: rgba(0, 0, 0, 0.4);
+  border-radius: 50%;
+  background-size: 50%;
+  transition: all 0.3s ease;
+}
+
+.home-carousel-section .carousel-control-prev-icon:hover,
+.home-carousel-section .carousel-control-next-icon:hover {
+  background-color: rgba(228, 0, 43, 0.6);
+}
+
+.home-carousel-section .carousel-indicators {
+  bottom: 20px;
+}
+
+.home-carousel-section .carousel-indicators button {
+  background-color: rgba(255, 255, 255, 0.4);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin: 0 4px;
+  border: none;
+  transition: all 0.3s ease;
+}
+
+.home-carousel-section .carousel-indicators button.active {
+  background-color: var(--primary-red);
+  width: 12px;
+  height: 12px;
+}
+
+/* Адаптивность для планшетов */
+@media (max-width: 992px) {
+  .home-page {
+    padding: 0;
+  }
+
+  .home-page > .container:first-child {
+    padding-top: 3rem;
+    padding-bottom: 1.5rem;
+  }
+
+  .home-title {
+    font-size: 3rem;
+  }
+
+  .home-description {
+    font-size: 1.15rem;
+  }
+
+  .carousel-slide {
+    height: 400px;
+  }
+
+  .carousel-content h2 {
+    font-size: 2.5rem;
+  }
+
+  .carousel-content p {
+    font-size: 1.25rem;
+  }
+}
+
+/* Адаптивность для мобильных */
 @media (max-width: 768px) {
+  .home-page {
+    padding: 0;
+  }
+
+  .home-page > .container:first-child {
+    padding-top: 2rem;
+    padding-bottom: 1.5rem;
+  }
+
   .home-title {
     font-size: 2.5rem;
   }
 
   .home-description {
     font-size: 1.1rem;
+  }
+
+  .carousel-slide {
+    height: 350px;
+  }
+
+  .carousel-content h2 {
+    font-size: 2rem;
+  }
+
+  .carousel-content p {
+    font-size: 1.1rem;
+  }
+}
+
+/* Адаптивность для маленьких мобильных */
+@media (max-width: 576px) {
+  .home-page > .container:first-child {
+    padding-top: 1.5rem;
+    padding-bottom: 1rem;
+  }
+
+  .home-title {
+    font-size: 2rem;
+  }
+
+  .home-description {
+    font-size: 1rem;
+  }
+
+  .carousel-slide {
+    height: 300px;
+  }
+
+  .carousel-content {
+    padding: 1rem;
+  }
+
+  .carousel-content h2 {
+    font-size: 1.75rem;
+  }
+
+  .carousel-content p {
+    font-size: 1rem;
   }
 }

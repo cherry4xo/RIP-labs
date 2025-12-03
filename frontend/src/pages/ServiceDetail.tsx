@@ -1,10 +1,12 @@
 // src/pages/ServiceDetail.tsx
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
-import { Row, Col, Button } from 'react-bootstrap';
+import { useParams, Link, useNavigate } from 'react-router-dom';
+import { Row, Col, Button, Alert } from 'react-bootstrap';
 import type { VulnerabilityAssessment, VulnerabilityAssessmentType } from '../types/api';
 import { VulnerabilityAssessmentType as VulnType } from '../types/api';
 import { getVulnerabilityAssessment } from '../services/api';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { addToCart, fetchBasketInfo } from '../store/cartSlice';
 import './ServiceDetail.css';
 
 const ASSESSMENT_TYPE_LABELS: Record<VulnerabilityAssessmentType, string> = {
@@ -15,13 +17,25 @@ const ASSESSMENT_TYPE_LABELS: Record<VulnerabilityAssessmentType, string> = {
 
 export function ServiceDetail() {
   const { id } = useParams<{ id: string }>();
+  const navigate = useNavigate();
+  const dispatch = useAppDispatch();
+  const { isAuthenticated } = useAppSelector((state) => state.auth);
+  const { loading: cartLoading } = useAppSelector((state) => state.cart);
+
   const [service, setService] = useState<VulnerabilityAssessment | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [addSuccess, setAddSuccess] = useState(false);
 
   useEffect(() => {
     if (id) {
-      loadService(parseInt(id, 10));
+      const serviceId = parseInt(id, 10);
+      if (isNaN(serviceId)) {
+        setError('Некорректный идентификатор услуги');
+        setLoading(false);
+        return;
+      }
+      loadService(serviceId);
     }
   }, [id]);
 
@@ -39,6 +53,23 @@ export function ServiceDetail() {
       setLoading(false);
     }
   }
+
+  const handleAddToCart = async () => {
+    if (!isAuthenticated) {
+      navigate('/login');
+      return;
+    }
+
+    if (!service) return;
+
+    const result = await dispatch(addToCart(service.id));
+
+    if (addToCart.fulfilled.match(result)) {
+      setAddSuccess(true);
+      await dispatch(fetchBasketInfo());
+      setTimeout(() => setAddSuccess(false), 3000);
+    }
+  };
 
   function formatPrice(price: string | number): string {
     return new Intl.NumberFormat('ru-RU', {
@@ -70,6 +101,15 @@ export function ServiceDetail() {
   return (
     <div className="service-detail-page">
       <h1 className="page-title">{service.title}</h1>
+
+      {addSuccess && (
+        <Alert variant="success" onClose={() => setAddSuccess(false)} dismissible>
+          Услуга добавлена в корзину!{' '}
+          <Link to="/cart" className="alert-link">
+            Перейти в корзину
+          </Link>
+        </Alert>
+      )}
 
       <Row className="detail-container">
         <Col lg={6}>
@@ -103,6 +143,33 @@ export function ServiceDetail() {
             </div>
 
             <div className="detail-actions">
+              {isAuthenticated ? (
+                <Button
+                  variant="success"
+                  className="me-2"
+                  onClick={handleAddToCart}
+                  disabled={cartLoading}
+                >
+                  {cartLoading ? (
+                    <>
+                      <span className="spinner-border spinner-border-sm me-2" />
+                      Добавление...
+                    </>
+                  ) : (
+                    'Добавить в корзину'
+                  )}
+                </Button>
+              ) : (
+                <Button
+                  as={Link}
+                  to="/login"
+                  variant="success"
+                  className="me-2"
+                >
+                  Войдите, чтобы добавить в корзину
+                </Button>
+              )}
+
               <Link to="/services">
                 <Button variant="outline" className="btn-outline">
                   Назад к списку

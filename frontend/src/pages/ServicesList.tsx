@@ -5,6 +5,9 @@ import { Row, Col, Card, Form, Button, InputGroup } from 'react-bootstrap';
 import type { VulnerabilityAssessment, VulnerabilityAssessmentType } from '../types/api';
 import { VulnerabilityAssessmentType as VulnType } from '../types/api';
 import { getVulnerabilityAssessments } from '../services/api';
+import { useAppDispatch, useAppSelector } from '../store/hooks';
+import { setSearchQuery, resetFilters, selectSearchQuery } from '../store/filtersSlice';
+import { CartButton } from '../components/CartButton';
 import './ServicesList.css';
 
 const ASSESSMENT_TYPE_LABELS: Record<VulnerabilityAssessmentType, string> = {
@@ -14,31 +17,45 @@ const ASSESSMENT_TYPE_LABELS: Record<VulnerabilityAssessmentType, string> = {
 };
 
 export function ServicesList() {
+  const dispatch = useAppDispatch();
+  const searchQuery = useAppSelector(selectSearchQuery);
+
   const [services, setServices] = useState<VulnerabilityAssessment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Состояния фильтров
-  const [titleFilter, setTitleFilter] = useState('');
-  const [typeFilter, setTypeFilter] = useState<VulnerabilityAssessmentType | ''>('');
-  const [minPriceFilter, setMinPriceFilter] = useState('');
-  const [maxPriceFilter, setMaxPriceFilter] = useState('');
-
-  // Загрузка данных при изменении фильтров
+  // Загрузка данных только при монтировании компонента
   useEffect(() => {
-    loadServices();
-  }, [titleFilter, typeFilter, minPriceFilter, maxPriceFilter]);
+    loadInitialServices();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
+  // Начальная загрузка всех услуг без фильтров
+  async function loadInitialServices() {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await getVulnerabilityAssessments({});
+      setServices(data);
+    } catch (err) {
+      setError('Не удалось загрузить список услуг');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // Загрузка услуг с применением фильтра
   async function loadServices() {
     setLoading(true);
     setError(null);
 
     try {
-      const params: any = {};
-      if (titleFilter) params.title = titleFilter;
-      if (typeFilter) params.assessment_type = typeFilter;
-      if (minPriceFilter) params.min_price = Number(minPriceFilter);
-      if (maxPriceFilter) params.max_price = Number(maxPriceFilter);
+      const params: {
+        title?: string;
+      } = {};
+      if (searchQuery) params.title = searchQuery;
 
       const data = await getVulnerabilityAssessments(params);
       setServices(data);
@@ -55,6 +72,12 @@ export function ServicesList() {
     loadServices();
   }
 
+  function handleResetFilters() {
+    dispatch(resetFilters());
+    // После сброса фильтров загружаем все услуги
+    loadInitialServices();
+  }
+
   function formatPrice(price: string | number): string {
     return new Intl.NumberFormat('ru-RU', {
       style: 'currency',
@@ -66,68 +89,39 @@ export function ServicesList() {
   return (
     <div className="services-list-page">
       <div className="hero-section">
-        <h1 className="page-title">Виды анализа</h1>
+        <div className="d-flex justify-content-between align-items-center">
+          <h1 className="page-title">Виды анализа</h1>
+          <CartButton />
+        </div>
       </div>
 
       {/* Фильтры */}
       <Form onSubmit={handleSearchSubmit} className="filters-section">
         <Row className="g-3">
-          <Col md={6}>
+          <Col md={10}>
             <Form.Label className="text-secondary">Поиск по названию</Form.Label>
             <InputGroup>
               <Form.Control
                 type="text"
                 placeholder="Поиск по наименованию..."
-                value={titleFilter}
-                onChange={(e) => setTitleFilter(e.target.value)}
+                value={searchQuery}
+                onChange={(e) => dispatch(setSearchQuery(e.target.value))}
                 className="form-control"
               />
             </InputGroup>
           </Col>
 
-          <Col md={6}>
-            <Form.Label className="text-secondary">Тип анализа</Form.Label>
-            <Form.Select
-              value={typeFilter}
-              onChange={(e) => setTypeFilter(e.target.value as VulnerabilityAssessmentType | '')}
-              className="form-select"
+          <Col md={2} className="d-flex align-items-end gap-2">
+            <Button type="submit" className="btn-primary flex-grow-1">
+              Поиск
+            </Button>
+            <Button
+              type="button"
+              className="btn-outline"
+              onClick={handleResetFilters}
+              title="Сбросить фильтры"
             >
-              <option value="">Все типы анализа</option>
-              {Object.entries(ASSESSMENT_TYPE_LABELS).map(([value, label]) => (
-                <option key={value} value={value}>
-                  {label}
-                </option>
-              ))}
-            </Form.Select>
-          </Col>
-
-          <Col md={5}>
-            <Form.Label className="text-secondary">Минимальная цена (₽)</Form.Label>
-            <Form.Control
-              type="number"
-              placeholder="От"
-              value={minPriceFilter}
-              onChange={(e) => setMinPriceFilter(e.target.value)}
-              className="form-control"
-              min="0"
-            />
-          </Col>
-
-          <Col md={5}>
-            <Form.Label className="text-secondary">Максимальная цена (₽)</Form.Label>
-            <Form.Control
-              type="number"
-              placeholder="До"
-              value={maxPriceFilter}
-              onChange={(e) => setMaxPriceFilter(e.target.value)}
-              className="form-control"
-              min="0"
-            />
-          </Col>
-
-          <Col md={2} className="d-flex align-items-end">
-            <Button type="submit" className="btn-primary w-100">
-              Применить
+              ✕
             </Button>
           </Col>
         </Row>

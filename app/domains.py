@@ -143,3 +143,8 @@ class AssessmentReportSummary(BaseModel):
     formation_date: Optional[datetime] = None
     risk_score: Optional[int] = None
     creator_login: str
+
+class RiskResultPayload(BaseModel):
+    report_id: int
+    risk_score: int
+    status: str

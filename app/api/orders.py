@@ -2,7 +2,7 @@
 
 from datetime import date
 from typing import List, Optional
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, Request
 from app import domains
 from app import interfaces
 from app.use_cases import order as order_use_cases
@@ -156,6 +156,28 @@ async def cancel_report(report_id: int, moderator: CurrentUserDep, db: DBSession
         await order_use_cases.cancel_report(repo, report_id, moderator.id)
         await db.commit()
         return await repo.get_full_report_details(report_id)
+    except ReportNotFoundError as e:
+        await db.rollback()
+        raise HTTPException(status_code=404, detail=str(e))
+
+@router.put("/reports/{report_id}/risk-result", status_code=status.HTTP_200_OK)
+async def update_risk_score(
+    report_id: int,
+    payload: domains.RiskResultPayload,
+    db: DBSessionDep,
+    x_api_token: str = Depends(lambda req: req.headers.get("X-API-Token"))
+):
+    """Endpoint для приема результатов расчета risk_score от асинхронного сервиса."""
+    # Проверка токена
+    API_TOKEN = "lab8secret"
+    if x_api_token != API_TOKEN:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid API token")
+
+    repo = SqlAlchemyDatabaseRepo(db)
+    try:
+        await order_use_cases.update_risk_score(repo, report_id, payload.risk_score)
+        await db.commit()
+        return {"status": "success", "message": f"Risk score updated for report {report_id}"}
     except ReportNotFoundError as e:
         await db.rollback()
         raise HTTPException(status_code=404, detail=str(e))

@@ -1,0 +1,22 @@
+/* src/pages/ReportsList.css */
+
+.reports-list {
+  max-width: 1400px;
+}
+
+.filters-section {
+  background-color: rgba(25, 25, 25, 0.95);
+  border: 2px solid var(--border-color);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  padding: 2rem;
+  margin-bottom: 2rem;
+}
+
+.table-responsive {
+  margin-top: 20px;
+}
+
+.spinner-border {
+  width: 3rem;
+  height: 3rem;
+}

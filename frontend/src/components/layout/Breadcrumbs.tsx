@@ -26,16 +26,13 @@ export function Breadcrumbs({ items }: BreadcrumbsProps) {
       <ol className="breadcrumbs-list">
         {breadcrumbItems.map((item, index) => {
           const isLast = index === breadcrumbItems.length - 1;
-
+          
           return (
             <li key={item.path} className={`breadcrumb-item ${isLast ? 'active' : ''}`}>
               {isLast ? (
                 <span>{item.label}</span>
               ) : (
-                <>
-                  <Link to={item.path}>{item.label}</Link>
-                  <span className="breadcrumb-separator">/</span>
-                </>
+                <Link to={item.path}>{item.label}</Link>
               )}
             </li>
           );
@@ -57,19 +54,22 @@ function generateBreadcrumbsFromPath(pathname: string): BreadcrumbItem[] {
   ];
 
   let currentPath = '';
-  paths.forEach((path, index) => {
-    currentPath += `/${path}`;
+  paths.forEach((path) => {
+    currentPath = currentPath ? `${currentPath}/${path}` : `/${path}`;
 
     // Определяем label в зависимости от пути
-    let label = path;
+    let label: string;
     if (path === 'services') {
       label = 'Услуги';
     } else if (/^\d+$/.test(path)) {
       label = 'Детали';
+    } else {
+      // Для остальных случаев делаем первую букву заглавной
+      label = path.charAt(0).toUpperCase() + path.slice(1);
     }
 
     breadcrumbs.push({
-      label: label.charAt(0).toUpperCase() + label.slice(1),
+      label: label,
       path: currentPath
     });
   });

@@ -4,7 +4,6 @@ from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
 from app.core.middlewares import init_middlewares
-# from app.views import router
 from app.api import auth, orders, services
 from app.core.database import get_session_manager
 

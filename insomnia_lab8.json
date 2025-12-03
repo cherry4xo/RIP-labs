@@ -1,0 +1,254 @@
+{
+  "_type": "export",
+  "__export_format": 4,
+  "__export_date": "2025-11-30T18:00:00.000Z",
+  "__export_source": "insomnia.desktop.app:v2023.5.0",
+  "resources": [
+    {
+      "_id": "env_lab8",
+      "parentId": null,
+      "modified": 1732992000000,
+      "created": 1732992000000,
+      "name": "Lab 8 Environment",
+      "data": {
+        "base_url": "http://localhost:8000/api",
+        "async_service_url": "http://localhost:8082",
+        "token_creator": "",
+        "token_moderator": "",
+        "api_token": "lab8secret"
+      },
+      "dataPropertyNames": [
+        "base_url",
+        "async_service_url",
+        "token_creator",
+        "token_moderator",
+        "api_token"
+      ],
+      "environment": {},
+      "isPrivate": false,
+      "meta": {},
+      "color": null,
+      "_type": "environment"
+    },
+    {
+      "_id": "fld_lab8_async",
+      "parentId": null,
+      "modified": 1732992000000,
+      "created": 1732992000000,
+      "name": "🚀 Лаб 8: Асинхронный сервис",
+      "description": "",
+      "environment": {},
+      "environmentPropertyNames": [],
+      "meta": {},
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_async_health",
+      "parentId": "fld_lab8_async",
+      "modified": 1732992000000,
+      "created": 1732992000000,
+      "url": "{{async_service_url}}/health",
+      "name": "GET - Health Check (Go-сервис)",
+      "description": "Проверка работоспособности асинхронного Go-сервиса",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [],
+      "authentication": {},
+      "metaSortKey": -1732992000000,
+      "_type": "request"
+    },
+    {
+      "_id": "req_async_calculate",
+      "parentId": "fld_lab8_async",
+      "modified": 1732992000000,
+      "created": 1732992000000,
+      "url": "{{async_service_url}}/calculate-risk",
+      "name": "POST - Расчет risk_score",
+      "description": "Запускает асинхронный расчет risk_score для отчета. Сервис выполнит задержку 5-10 секунд, рассчитает risk_score и отправит результат обратно в основной сервис.",
+      "method": "POST",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"report_id\": 1,\n  \"components\": [\n    {\n      \"protection_level\": \"none\",\n      \"impact_level\": 3\n    },\n    {\n      \"protection_level\": \"basic\",\n      \"impact_level\": 2\n    }\n  ]\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732992000001,
+      "_type": "request"
+    },
+    {
+      "_id": "fld_lab8_reports",
+      "parentId": null,
+      "modified": 1732992000000,
+      "created": 1732992000000,
+      "name": "📋 Лаб 8: Заявки (Reports)",
+      "description": "",
+      "environment": {},
+      "environmentPropertyNames": [],
+      "meta": {},
+      "_type": "request_group"
+    },
+    {
+      "_id": "req_get_reports",
+      "parentId": "fld_lab8_reports",
+      "modified": 1732992000000,
+      "created": 1732992000000,
+      "url": "{{base_url}}/reports",
+      "name": "GET - Список заявок (с фильтрацией)",
+      "description": "Получение списка заявок с фильтрацией по статусу и датам",
+      "method": "GET",
+      "body": {},
+      "parameters": [
+        {
+          "name": "status",
+          "value": "formed",
+          "disabled": true
+        },
+        {
+          "name": "date_from",
+          "value": "2025-01-01",
+          "disabled": true
+        },
+        {
+          "name": "date_to",
+          "value": "2025-12-31",
+          "disabled": true
+        }
+      ],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_moderator}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732992000002,
+      "_type": "request"
+    },
+    {
+      "_id": "req_get_report_details",
+      "parentId": "fld_lab8_reports",
+      "modified": 1732992000000,
+      "created": 1732992000000,
+      "url": "{{base_url}}/reports/1",
+      "name": "GET - Детали заявки",
+      "description": "Получение детальной информации о заявке",
+      "method": "GET",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_moderator}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732992000003,
+      "_type": "request"
+    },
+    {
+      "_id": "req_form_report",
+      "parentId": "fld_lab8_reports",
+      "modified": 1732992000000,
+      "created": 1732992000000,
+      "url": "{{base_url}}/reports/1/form",
+      "name": "PUT - Сформировать заявку",
+      "description": "Формирование заявки. После этого автоматически запускается асинхронный расчет risk_score через Go-сервис.",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"target_system_info\": \"Web Application v2.0\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_creator}}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732992000004,
+      "_type": "request"
+    },
+    {
+      "_id": "req_update_risk_score",
+      "parentId": "fld_lab8_reports",
+      "modified": 1732992000000,
+      "created": 1732992000000,
+      "url": "{{base_url}}/reports/1/risk-result",
+      "name": "PUT - Обновить risk_score (внутренний)",
+      "description": "Endpoint для обновления risk_score. Используется Go-сервисом. Требует API токен.",
+      "method": "PUT",
+      "body": {
+        "mimeType": "application/json",
+        "text": "{\n  \"report_id\": 1,\n  \"risk_score\": 8,\n  \"status\": \"success\"\n}"
+      },
+      "parameters": [],
+      "headers": [
+        {
+          "name": "X-API-Token",
+          "value": "{{api_token}}"
+        },
+        {
+          "name": "Content-Type",
+          "value": "application/json"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732992000005,
+      "_type": "request"
+    },
+    {
+      "_id": "req_complete_report",
+      "parentId": "fld_lab8_reports",
+      "modified": 1732992000000,
+      "created": 1732992000000,
+      "url": "{{base_url}}/reports/1/complete",
+      "name": "PUT - Завершить заявку (модератор)",
+      "description": "Завершение заявки модератором",
+      "method": "PUT",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_moderator}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732992000006,
+      "_type": "request"
+    },
+    {
+      "_id": "req_cancel_report",
+      "parentId": "fld_lab8_reports",
+      "modified": 1732992000000,
+      "created": 1732992000000,
+      "url": "{{base_url}}/reports/1/cancel",
+      "name": "PUT - Отклонить заявку (модератор)",
+      "description": "Отклонение заявки модератором",
+      "method": "PUT",
+      "body": {},
+      "parameters": [],
+      "headers": [
+        {
+          "name": "Authorization",
+          "value": "Bearer {{token_moderator}}"
+        }
+      ],
+      "authentication": {},
+      "metaSortKey": -1732992000007,
+      "_type": "request"
+    }
+  ]
+}

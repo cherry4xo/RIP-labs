@@ -1,0 +1,9 @@
+/* src/pages/Cart.css */
+
+.cart-container {
+  max-width: 1200px;
+}
+
+.cart-container textarea {
+  resize: vertical;
+}
