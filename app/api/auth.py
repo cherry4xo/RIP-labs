@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordRequestForm, OAuth2PasswordBearer
+from fastapi.security import OAuth2PasswordRequestForm
 from typing import Annotated
 
 from app import domains
@@ -7,7 +7,6 @@ from app.core.database import DBSessionDep
 from app.repository import SqlAlchemyDatabaseRepo
 from app.auth.dependencies import CurrentUserDep
 from app.auth import security, use_cases
-from app.core.redis_utils import add_token_to_blacklist
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -60,11 +59,9 @@ async def update_users_me_endpoint(user_data: domains.UserUpdate, user: CurrentU
 
 
 @router.post("/logout")
-async def logout_user(current_user: CurrentUserDep, token: str = Depends(OAuth2PasswordBearer(tokenUrl="/auth/token"))):
+async def logout_user(current_user: CurrentUserDep):
     """
-    Деавторизация пользователя.
-    Добавляет токен в черный список Redis.
+    Деавторизация пользователя (заглушка).
+    В текущей версии с заглушкой авторизации не выполняет реальных действий.
     """
-    # Add token to blacklist
-    await add_token_to_blacklist(token)
     return {"message": "Successfully logged out"}

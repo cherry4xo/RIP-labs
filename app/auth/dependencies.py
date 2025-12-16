@@ -1,48 +1,35 @@
-from typing import Annotated
+from typing import Annotated, Optional
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
-import jwt
+from fastapi import Depends, HTTPException, status, Header
 
-from app import domains, use_cases
+from app import domains
 from app.core.database import get_db_session, AsyncSession
 from app.repository import SqlAlchemyDatabaseRepo
-from app.core import settings
-from app.core.redis_utils import is_token_blacklisted
-
-
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/token")
 
 
 async def get_current_user(
-    token: Annotated[str, Depends(oauth2_scheme)],
-    db: Annotated[AsyncSession, Depends(get_db_session)]
+    db: Annotated[AsyncSession, Depends(get_db_session)],
+    x_user_id: Optional[str] = Header(default="3")
 ) -> domains.UserRead:
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"}
-    )
-    
-    if await is_token_blacklisted(token):
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has been revoked",
-            headers={"WWW-Authenticate": "Bearer"}
-        )
-    
+    """
+    Заглушка для авторизации: получает user_id из заголовка X-User-Id.
+    По умолчанию использует user_id=1.
+    """
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
-        user_id: str = payload.get("sub")
-        if user_id is None:
-            raise credentials_exception
-    except jwt.PyJWTError:
-        raise credentials_exception
-    
+        user_id = int(x_user_id)
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid X-User-Id header"
+        )
+
     repo = SqlAlchemyDatabaseRepo(db)
-    user = await repo.get_user_by_id(user_id=int(user_id))
+    user = await repo.get_user_by_id(user_id=user_id)
     if user is None:
-        raise credentials_exception
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"User with id {user_id} not found"
+        )
     return user
 
 
